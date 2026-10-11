@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#94dfff" name="theme-color"/>
+<title>SEEDWIND Aqua • Kenya Living Earth Lab</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Manrope:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Nunito:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<style>
+:root{color-scheme:dark;--bg:#061118;--surface:rgba(13,32,42,.76);--surface-deep:rgba(8,25,33,.90);--surface-lite:rgba(25,48,58,.56);--line:rgba(165,227,226,.15);--line-strong:rgba(154,241,227,.31);--ink:#e9f9fa;--mut:#83a0aa;--acc:#83f4da;--accink:#052820;--good:#9ceb94;--bad:#ff987f;--unk:#25404a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:13px/1.55 'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse 68% 85% at 47% -25%,#164753 0%,transparent 72%),radial-gradient(ellipse 80% 90% at 110% 100%,#143e37 0%,transparent 70%),#061118}body::after{content:'';position:fixed;inset:0;z-index:-1;opacity:.2;pointer-events:none;background-image:linear-gradient(#b2e5e51b 1px,transparent 1px),linear-gradient(90deg,#b2e5e51b 1px,transparent 1px);background-size:54px 54px;mask-image:linear-gradient(to bottom,#000,transparent 90%)}
+button,select,input{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:3px}::selection{background:#83f4da60;color:white}
+.app{max-width:1920px;margin:auto;padding:0 28px 26px}
+/* top application bar */
+.topbar{min-height:84px;display:flex;align-items:center;gap:22px;border-bottom:1px solid var(--line);margin-bottom:23px}.brand{display:flex;align-items:center;gap:13px;min-width:270px}.brand-icon{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#a4ffb8 0%,#50e5d9 92%);box-shadow:0 0 28px #6af7d532;display:grid;place-items:center;color:#092e2d}.brand-icon svg{width:28px;height:28px}.brand-name{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.095em;font-size:18px;line-height:1}.brand-name span{color:var(--acc)}.brand-sub{font:500 9px/2 'DM Mono',monospace;letter-spacing:.23em;color:#799da5}.top-divider{height:32px;width:1px;background:var(--line)}.navlinks{display:flex;gap:6px;margin-right:auto}.navlink{padding:11px 15px;border-radius:9px;font-size:11px;color:#8ea9af;font-weight:700;letter-spacing:.03em}.navlink.active{background:#a2fff014;color:var(--acc);border:1px solid #a2fff025}.navlink:not(.active){border:1px solid transparent}.topright{display:flex;gap:10px;align-items:center}.sys-pill{display:flex;align-items:center;gap:9px;border:1px solid #9cffe23b;background:#66ffd30d;border-radius:99px;padding:8px 12px;font:500 10px 'DM Mono',monospace;color:#b3fce7;letter-spacing:.08em;white-space:nowrap}.status-dot{width:7px;height:7px;background:#a1ffbc;border-radius:50%;box-shadow:0 0 0 4px #a1ffbc16,0 0 18px #a1ffbc85;animation:blink 2.2s ease-in-out infinite}.top-clock{font:10px 'DM Mono',monospace;color:#769aa3;white-space:nowrap}.top-avatar{width:35px;height:35px;border:1px solid var(--line-strong);background:rgba(123,238,208,.08);border-radius:10px;display:grid;place-items:center;color:var(--acc);font-weight:800;font-size:12px}
+@keyframes blink{50%{box-shadow:0 0 0 7px #a1ffbc0a,0 0 23px #a1ffbc}}
+/* overview heading */
+.pagelead{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.eyebrow{font:500 10px 'DM Mono',monospace;color:var(--acc);letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}.pagelead h1{font:600 clamp(28px,3.2vw,42px)/1.06 'Space Grotesk',sans-serif;letter-spacing:-1.9px;margin:0 0 9px}.pagelead h1 em{font-style:normal;color:var(--acc)}.pagelead p{color:var(--mut);font-size:12px;margin:0}.lead-side{display:flex;align-items:center;gap:10px}.lead-coords{font:10px/1.7 'DM Mono',monospace;color:#97bbc2;text-align:right;border-right:1px solid var(--line);padding-right:16px}.live-pill{display:flex;align-items:center;gap:8px;font:500 10px 'DM Mono',monospace;letter-spacing:.12em;color:var(--acc);border:1px solid var(--line-strong);background:#63ddc313;padding:11px 14px;border-radius:11px;white-space:nowrap}
+/* application layout */
+.dashboard{display:grid;grid-template-columns:275px minmax(400px,1fr) 305px;gap:16px;align-items:stretch}.leftcol,.rightcol,.centercol{min-width:0;display:flex;flex-direction:column;gap:16px}.glass{background:linear-gradient(145deg,rgba(25,51,61,.73),rgba(7,23,32,.87));border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 65px #00000024,inset 0 1px #ffffff10;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}.block{padding:19px}.block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:19px;gap:8px}.section-title{margin:0;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.105em;text-transform:uppercase;color:#e5fcfc}.microtag{font:500 9px 'DM Mono',monospace;color:var(--acc);border:1px solid #80e8d335;padding:4px 7px;border-radius:5px;white-space:nowrap}.microtag.gray{color:#92abb1;border-color:var(--line)}.tiny-index{font:10px 'DM Mono',monospace;color:#5d828c}.block-sub{color:var(--mut);font-size:11px;margin:-8px 0 17px}
+/* form style */
+label{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:11px 0 7px;color:#9eb6bd;font-size:11px;font-weight:600}label.chk{justify-content:flex-start;gap:11px;color:#c0d8d8;cursor:pointer;margin:13px 0}label b{color:var(--acc);font:500 11px 'DM Mono',monospace}select{max-width:100%;min-width:75px;background:#112b36;color:#e6f9f6;border:1px solid #33535e;border-radius:9px;padding:9px 10px;font-size:11px;cursor:pointer}select:hover{border-color:#8cecd56d}select#site{width:100%;height:43px;font-size:12px;font-weight:700}input[type=checkbox]{appearance:none;width:16px;height:16px;flex:0 0 16px;border:1px solid #5b8086;border-radius:5px;background:#0b2631;margin:0;cursor:pointer}input[type=checkbox]:checked{background:var(--acc);border-color:var(--acc);box-shadow:0 0 12px #83f4da40}input[type=checkbox]:checked:after{content:'✓';display:block;text-align:center;line-height:14px;font-weight:900;font-size:12px;color:#0d352c}input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer;height:4px;margin:8px 0 13px}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:7px;border:1px solid rgba(147,206,207,.22);border-radius:10px;background:#c4fff50b;color:#c9e8e6;padding:10px 12px;font-size:11px;font-weight:800;transition:.2s ease;transition-property:background,border-color,transform,box-shadow;min-height:38px}.btn:hover{background:#a2fff01f;border-color:#a2fff074;transform:translateY(-1px)}.btn:active{transform:scale(.98)}button.pri,.btn.pri{background:linear-gradient(110deg,#b4ffad,#77f8d6);border:1px solid #c4ffca;color:#0a302c;box-shadow:0 5px 22px #6befb52d}.btn.pri:hover{background:linear-gradient(110deg,#d0ffc8,#9effe7);box-shadow:0 8px 29px #6befb552}.btn.danger{color:#f5b0a3;border-color:#e89b8545}.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}.btn-row .btn{width:100%}.btn.full{width:100%}.btn.icon-only{width:39px;min-width:39px;padding:0;font-size:16px}.divider{height:1px;background:var(--line);margin:17px 0}.hint{margin:12px 0 0;color:#87a5ab;font-size:10px;line-height:1.75}.mini-caption{font:500 9px 'DM Mono',monospace;letter-spacing:.11em;color:#7798a2;text-transform:uppercase;margin-bottom:12px}
+/* left toolbar */
+.site-overview{height:92px;border:1px solid #9ce3cf24;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 84% 30%,#39726135,transparent 52%),linear-gradient(115deg,#193947,#0b2834);display:flex;align-items:center;padding:14px;gap:12px;margin-bottom:13px;position:relative}.site-overview:after{content:'';position:absolute;right:10px;top:-30px;border:1px solid #b1fff323;border-radius:50%;width:110px;height:110px;box-shadow:0 0 0 18px #b1fff309,0 0 0 38px #b1fff305}.site-symbol{width:44px;height:44px;border-radius:12px;background:#76edc524;border:1px solid #99f9de51;display:grid;place-items:center;position:relative;z-index:1}.site-symbol svg{width:22px;height:22px;stroke:#b4ffdc;fill:none;stroke-width:1.6}.site-details{position:relative;z-index:1}.site-details strong{display:block;font:600 13px 'Space Grotesk',sans-serif}.site-details small{display:block;font:9px 'DM Mono',monospace;color:#9ed9cb;margin-top:7px}.layer-line{border-bottom:1px solid #b4e4e415;padding:5px 0}.layer-line:last-of-type{border-bottom:0}.layer-label{display:flex;align-items:center;gap:8px}.layer-icon{width:24px;height:24px;border-radius:7px;background:#7ef5d614;display:grid;place-items:center;color:#92efda;font-size:12px}.control-label{font-size:11px;color:#d0e5e7}.control-value{margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}.control-value label{margin:0}
+/* forecast chart */
+#strip{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:3px;margin:10px 0 12px}#strip button{min-width:0;height:26px;padding:0;border-radius:3px;border:1px solid #ffffff0c;transition:transform .15s}#strip button:hover{transform:scaleY(1.2)}#strip .ok{background:#74d9b2}#strip .no{background:#e58878;opacity:.60}#strip .sel{border-color:#f7ffff;box-shadow:0 0 0 1px #fff,0 0 12px #c2fff77d;opacity:1}.forecast-legend{display:flex;gap:14px;color:#9aafb4;font:9px 'DM Mono',monospace;margin-top:7px}.forecast-legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px;background:#74d9b2}.forecast-legend i.no{background:#e58878}.forecast-time{font:11px 'DM Mono',monospace;color:#a4f8df}.weather-info{font-size:10px;color:var(--mut);line-height:1.55;margin:9px 0 0}
+/* main map */
+.map-card{position:relative;min-height:545px;flex:1;overflow:hidden;border:1px solid rgba(131,244,218,.30);border-radius:18px;box-shadow:0 23px 80px #0007,0 0 45px #76f3d410;background:#0b2932;padding:5px}#map{width:100%;height:100%;min-height:532px;border-radius:14px;background:#132e34;z-index:0}.map-glow{position:absolute;inset:5px;border-radius:14px;pointer-events:none;z-index:402;box-shadow:inset 0 0 95px 14px #06121984}.map-overlay-top{pointer-events:none;position:absolute;top:23px;left:23px;right:23px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;z-index:700}.map-top-left{display:flex;flex-direction:column;gap:8px}.map-mode{align-self:flex-start;background:rgba(4,19,25,.81);border:1px solid #aaffec4d;backdrop-filter:blur(18px);border-radius:9px;padding:10px 12px;font:500 10px 'DM Mono',monospace;letter-spacing:.11em;color:#e4fff9}.map-mode span{color:#9effb4}.map-location{align-self:flex-start;background:rgba(4,19,25,.70);border:1px solid #c8ffee31;backdrop-filter:blur(18px);border-radius:9px;padding:7px 11px;font:500 9px 'DM Mono',monospace;color:#b8d7dc}.map-reticle{width:55px;height:55px;border:1px solid #c5fff643;border-radius:50%;position:relative;background:rgba(4,19,25,.53);backdrop-filter:blur(12px)}.map-reticle:before,.map-reticle:after{content:'';position:absolute;background:#a4ffeb90}.map-reticle:before{width:1px;height:75px;top:-11px;left:26px}.map-reticle:after{height:1px;width:75px;left:-11px;top:26px}.map-overlay-bottom{pointer-events:none;position:absolute;bottom:26px;left:25px;right:25px;display:flex;justify-content:space-between;align-items:end;gap:10px;z-index:700}.map-bottom-info{background:rgba(4,19,25,.87);border:1px solid #abf6e643;border-radius:12px;padding:12px 14px;backdrop-filter:blur(19px);min-width:180px}.map-bottom-info small{display:block;font:9px 'DM Mono',monospace;color:#8fb6ba;letter-spacing:.13em;margin-bottom:5px}.map-bottom-info strong{font:500 12px 'DM Mono',monospace;color:#e3fff7}.map-coordinates{font:9px/1.9 'DM Mono',monospace;text-align:right;color:#d9f8f3;text-shadow:0 1px 5px #000}.map-coordinates span{color:#9cd8d0}.map-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#061b26a6;border:1px solid #9debda30;padding:9px 11px;border-radius:10px;margin-top:0}.map-legend i{width:80px;height:5px;border-radius:99px;background:linear-gradient(90deg,#f1897c,#f0cb77,#97ef9c)}.map-legend span{font:9px 'DM Mono',monospace;color:#c3dadb}.map-desc{font-size:10px;color:#85a7ae;margin:7px 4px 0}.leaflet-control-zoom{border:1px solid #cafff63b!important;border-radius:10px!important;overflow:hidden;box-shadow:0 8px 25px #0007!important}.leaflet-bar a{background:#082630ee!important;color:#d8fff8!important;border-bottom:1px solid #dffff629!important}.leaflet-bar a:hover{background:#174844!important}.leaflet-control-layers{background:#082630ee!important;color:#d8fff8!important;border:1px solid #a2fff04d!important;border-radius:10px!important;backdrop-filter:blur(20px)}.leaflet-control-attribution{background:#061b26ac!important;color:#a6babd!important;font-size:8px!important}.leaflet-control-attribution a{color:#b1eedb!important}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.kpi{padding:16px 16px 14px;min-height:116px;position:relative;overflow:hidden}.kpi:after{content:'';width:80px;height:80px;border:1px solid #a8eed41d;position:absolute;right:-28px;top:-23px;border-radius:50%;box-shadow:0 0 0 12px #a8eed40a}.kpi-label{font:500 9px 'DM Mono',monospace;letter-spacing:.10em;color:#89a9b1;white-space:nowrap}.kpi-number{font:600 clamp(25px,2.4vw,34px) 'Space Grotesk',sans-serif;letter-spacing:-1.4px;margin-top:13px;line-height:1}.kpi-number .unit{font:500 12px 'DM Mono',monospace;color:#8fb7bc;letter-spacing:0;margin-left:4px}.kpi-desc{font:9px 'DM Mono',monospace;color:#78bdac;margin-top:9px}.kpi .kpi-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--acc);margin-right:5px;vertical-align:1px}.kpi.special .kpi-number{color:#afffb5}
+/* right control tower */
+.mission-status{border:1px solid #9dfac939;background:linear-gradient(130deg,#a1ffcb17,#7af6dc07);border-radius:12px;padding:12px 13px;display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.mission-status span{color:#a5bfc4;font:9px 'DM Mono',monospace;letter-spacing:.08em}.mission-status strong{font:500 10px 'DM Mono',monospace;color:var(--good);letter-spacing:.05em}.launch-btn{width:100%;height:48px;border-radius:10px;border:1px solid #beffc6;background:linear-gradient(105deg,#bdffa5,#7af5d2);color:#053025;font:800 12px 'Manrope',sans-serif;letter-spacing:.04em;display:flex;gap:9px;align-items:center;justify-content:center;box-shadow:0 6px 24px #a0eeb629;transition:transform .2s,box-shadow .2s}.launch-btn:hover{transform:translateY(-2px);box-shadow:0 9px 34px #a0eeb657}.launch-btn svg{width:17px;height:17px}.button-matrix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.button-matrix button{min-width:0;font-size:10px;padding:10px 4px}.statsmini{display:flex;flex-direction:column;gap:15px}.statrow{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#abc4c7}.statrow strong{font:500 11px 'DM Mono',monospace;color:#e1faf6}.stat-meter{height:4px;background:#5470783b;border-radius:9px;overflow:hidden;margin-top:7px}.stat-meter span{display:block;height:100%;background:linear-gradient(90deg,#69e3c6,#b7ffa4);border-radius:9px;transition:width .2s}.range-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.range-pair label{display:block;margin-top:0}.range-pair select{width:100%}.speed-row{display:flex;gap:7px}.speed-row label{display:block;flex:1}.speed-row select{width:100%}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,42px);gap:7px;justify-content:center;padding:2px 0 1px}.dpad button{background:#15343f;border:1px solid #8ebabc32;border-radius:10px;display:grid;place-items:center;font-size:15px;color:#c0eeeb;touch-action:none;transition:.18s}.dpad button:hover{background:#2b595a;border-color:#96efd7}.dpad button.pri{background:#95f8d1;color:#0a352c;font-size:11px;font-weight:800;border-color:#b8ffe5;box-shadow:0 0 20px #85f5ca32}.dpad .empty{background:transparent;border:1px solid #91c8ba10;border-radius:10px}.manual-help{font-size:10px;color:#80a2aa;text-align:center;margin-top:13px;line-height:1.7}.manual-help code{font:10px 'DM Mono',monospace;color:#c4e5e1;background:#ffffff0d;padding:2px 4px;border-radius:4px}
+/* telemetry and log area */
+.telemetry{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:0}.telemetry dt{color:#84a5ad;font-size:10px}.telemetry dd{margin:0;color:#e4f8f7;font:500 10px 'DM Mono',monospace;text-align:right;overflow-wrap:anywhere}.telemetry dd.warn{color:#ffb29e}.telemetry dt,.telemetry dd{padding:3px 0;border-bottom:1px solid #c8eeeb0b}.tw{overflow-x:auto;max-width:100%}table{width:100%;border-collapse:collapse;white-space:nowrap;font:10px 'DM Mono',monospace}th,td{text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid #9ccac51a}th{color:#88aeb6;font-weight:500}td{color:#d5eeeb}#msg{margin:0 0 12px;padding:11px 12px;border-radius:10px;border:1px solid #83f4da36;background:#83f4da0b;font-size:10px;color:#c6f1e8;line-height:1.6;min-height:40px}#data{margin:12px 0 0;font-size:9px;line-height:1.65;color:#789aa3}.footnote{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:19px;color:#60848e;font:9px 'DM Mono',monospace;letter-spacing:.08em}.footnote b{color:#a2d9d0;font-weight:500}
+/* widths */
+@media(min-width:1500px){.dashboard{grid-template-columns:295px minmax(400px,1fr) 328px}.map-card{min-height:630px}#map{min-height:617px}}
+@media(max-width:1280px){.app{padding:0 17px 25px}.dashboard{grid-template-columns:245px minmax(330px,1fr) 275px;gap:12px}.block{padding:14px}.topbar{gap:13px}.brand{min-width:245px}.kpi{padding:13px}.kpi-label{font-size:8px}.kpi-number{font-size:25px}.navlink{padding:9px}}
+@media(max-width:1050px){.dashboard{grid-template-columns:minmax(0,1fr) 280px}.centercol{grid-column:1;grid-row:1}.rightcol{grid-column:2;grid-row:1/3}.leftcol{grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}.leftcol>.glass:last-child{grid-column:1/-1}.map-card{min-height:520px}#map{min-height:507px}.navlinks{display:none}.brand{margin-right:auto}.top-clock{display:none}}
+@media(max-width:720px){.topbar{min-height:75px;margin-bottom:19px}.app{padding:0 12px 25px}.top-divider,.sys-pill{display:none}.brand{min-width:0}.brand-name{font-size:15px}.brand-icon{width:37px;height:37px}.pagelead{align-items:start}.pagelead h1{font-size:28px}.pagelead p{font-size:10px}.lead-side{display:none}.dashboard{grid-template-columns:minmax(0,1fr);gap:13px}.centercol,.leftcol,.rightcol{grid-column:1;grid-row:auto}.rightcol{display:grid;grid-template-columns:minmax(0,1fr)}.leftcol{grid-template-columns:1fr}.leftcol>.glass:last-child{grid-column:1}#map{min-height:470px;height:65vh}.map-card{min-height:483px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.map-reticle,.map-location{display:none}.map-bottom-info{min-width:0}.map-coordinates{font-size:8px}.telemetry{grid-template-columns:repeat(2,minmax(0,1fr))}.block{padding:17px}}
+@media(max-width:410px){.map-bottom-info{padding:9px}.map-bottom-info strong{font-size:10px}.map-overlay-bottom{left:13px;right:13px;bottom:19px}.map-overlay-top{left:14px;top:15px}.map-coordinates{max-width:110px;overflow-wrap:anywhere}#map{min-height:410px;height:62vh}.map-card{min-height:425px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Final composition tuning: keep the live map prominent and KPIs above the fold. */
+@media(min-width:721px){.centercol{justify-content:flex-start}.map-card{flex:0 0 auto;height:clamp(500px,62vh,680px);min-height:0}#map{height:100%;min-height:0}}
+@media(max-width:720px){.centercol{grid-row:1}.leftcol{grid-row:2}.rightcol{grid-row:3}}
+</style>
+<style id="aero-visual-system">
+.sys-pill.offline{background:linear-gradient(180deg,#fff4e7,#ffe0c1);color:#9b4a20}.sys-pill.offline .status-dot{background:#ff9f4d;box-shadow:0 0 0 4px #ffc38e4f}
+/* ========== SEEDWIND AERO OS — FRUTIGER AERO / AQUA UI ========== */
+/* Decorative offline map backdrop. Real Leaflet tiles cover this when loaded. */
+#map{background:radial-gradient(ellipse at 65% 20%,rgba(204,252,215,.75),transparent 42%),repeating-radial-gradient(ellipse at 45% 48%,transparent 0 28px,rgba(255,255,255,.18) 29px 30px,transparent 33px 57px),linear-gradient(132deg,#128ba9,#47c3b0 57%,#58a9c4)!important}
+
+:root{--bg:#8bdbf8;--panel:rgba(242,255,255,.67);--ink:#143e55;--mut:#52798a;--line:rgba(255,255,255,.76);--line-strong:rgba(255,255,255,.94);--acc:#0a91b2;--accink:#ffffff;--good:#12986c;--bad:#c75265;--unk:#b7e7e9;color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font:13px/1.5 'Nunito','Manrope',sans-serif;color:var(--ink);background:#7fcfe9;min-height:100vh}
+body:before,body:after{display:none}
+.aero-landscape{position:fixed;inset:0;z-index:-3;background:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAwIiBoZWlnaHQ9IjExMDAiIHZpZXdCb3g9IjAgMCAxODAwIDExMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIHNsaWNlIj48ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJza3kiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMDM3NmNlIi8+PHN0b3Agb2Zmc2V0PSIuMjciIHN0b3AtY29sb3I9IiM1NGJlZmYiLz48c3RvcCBvZmZzZXQ9Ii41OCIgc3RvcC1jb2xvcj0iI2M0ZjdmZiIvPjxzdG9wIG9mZnNldD0iLjc1IiBzdG9wLWNvbG9yPSIjZTVmZGZmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOWVkZGQ3Ii8+PC9saW5lYXJHcmFkaWVudD4KPHJhZGlhbEdyYWRpZW50IGlkPSJzdW4iPjxzdG9wIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iLjk4Ii8+PHN0b3Agb2Zmc2V0PSIuMTciIHN0b3AtY29sb3I9IiNmZmZjZDkiIHN0b3Atb3BhY2l0eT0iLjgiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZmJmZmViIiBzdG9wLW9wYWNpdHk9Ii4xNyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+PC9yYWRpYWxHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJoaWxsIiB4MT0iMCIgeTE9IjAiIHgyPSIuNSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNhZWY1NWYiLz48c3RvcCBvZmZzZXQ9Ii40MCIgc3RvcC1jb2xvcj0iIzU4YmQ1MyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBkOGU3OSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0iaGlsbDIiIHgxPSIwIiB5MT0iMCIgeDI9Ii41IiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzhmZTc1ZSIvPjxzdG9wIG9mZnNldD0iLjM4IiBzdG9wLWNvbG9yPSIjNDliZjU4Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTQ4ZjY5Ii8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJ3YXRlciIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNiNWZmZjQiIHN0b3Atb3BhY2l0eT0iLjgiLz48c3RvcCBvZmZzZXQ9Ii4zIiBzdG9wLWNvbG9yPSIjNTRlN2RjIiBzdG9wLW9wYWNpdHk9Ii43Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTU4ZWNjIiBzdG9wLW9wYWNpdHk9Ii41OCIvPjwvbGluZWFyR3JhZGllbnQ+CjxmaWx0ZXIgaWQ9ImJsdXIiPjxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjEyIi8+PC9maWx0ZXI+PGZpbHRlciBpZD0ic29mdCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iNSIvPjwvZmlsdGVyPjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjE4MDAiIGhlaWdodD0iMTEwMCIgZmlsbD0idXJsKCNza3kpIi8+CjxjaXJjbGUgY3g9IjEzODAiIGN5PSIxNzgiIHI9IjQ5MCIgZmlsbD0idXJsKCNzdW4pIi8+CjxnIG9wYWNpdHk9Ii43IiBmaWxsPSIjZmZmIiBmaWx0ZXI9InVybCgjYmx1cikiPjxlbGxpcHNlIGN4PSIyNTAiIGN5PSIyMDUiIHJ4PSIyMjUiIHJ5PSIzMCIvPjxlbGxpcHNlIGN4PSI0MjAiIGN5PSIyMjUiIHJ4PSIxMzAiIHJ5PSIyMiIvPjxlbGxpcHNlIGN4PSIxMTcwIiBjeT0iMjk1IiByeD0iMTk1IiByeT0iMjQiLz48ZWxsaXBzZSBjeD0iMTUxMCIgY3k9IjMxMCIgcng9IjE5MCIgcnk9IjI4Ii8+PC9nPgo8ZyBmaWxsPSIjZmZmIiBvcGFjaXR5PSIuODQiPjxlbGxpcHNlIGN4PSIxNDAiIGN5PSIxNzAiIHJ4PSI4NCIgcnk9IjMwIi8+PGVsbGlwc2UgY3g9IjIxMSIgY3k9IjE1MyIgcng9IjkzIiByeT0iNDIiLz48ZWxsaXBzZSBjeD0iMjkzIiBjeT0iMTczIiByeD0iMTEzIiByeT0iMzAiLz48ZWxsaXBzZSBjeD0iMTExMCIgY3k9IjI1NiIgcng9IjEwMCIgcnk9IjI2Ii8+PGVsbGlwc2UgY3g9IjEyMjAiIGN5PSIyMzciIHJ4PSIxMDIiIHJ5PSI0MyIvPjxlbGxpcHNlIGN4PSIxMzI3IiBjeT0iMjYwIiByeD0iMTIzIiByeT0iMjgiLz48ZWxsaXBzZSBjeD0iMTYyNSIgY3k9IjIwNSIgcng9Ijg1IiByeT0iMzAiLz48ZWxsaXBzZSBjeD0iMTcwOCIgY3k9IjE4NSIgcng9IjgyIiByeT0iNDAiLz48L2c+CjxwYXRoIGQ9Ik0wIDcwMCBRMjMwIDU3MCA1MDAgNjcwIFQ5NzAgNjUzIFQxODAwIDU5NSBWMTEwMCBIMFoiIGZpbGw9IiM2OGM5OWEiIG9wYWNpdHk9Ii43NSIvPgo8cGF0aCBkPSJNMCA3NTMgUTIxMCA2MzAgNDY1IDY5MiBUMTA1MCA3MDYgUTEzOTAgNTYwIDE4MDAgNjY1IFYxMTAwIEgwWiIgZmlsbD0idXJsKCNoaWxsMikiLz4KPHBhdGggZD0iTTAgOTAwIFEzMzAgNjE1IDczMCA4MDAgUTEwODAgOTM0IDE0MjAgNzEwIFExNjgwIDYyNCAxODAwIDcyMCBWMTEwMCBIMFoiIGZpbGw9InVybCgjaGlsbCkiLz4KPHBhdGggZD0iTTAgOTg0IFE0MTAgODIzIDc1MCA4NzAgUTEwMzAgOTA1IDEzNzAgNzY1IFExNjUwIDczMCAxODAwIDc4MyBWMTEwMCBIMFoiIGZpbGw9IiM3M2RmNjgiIG9wYWNpdHk9Ii40NCIvPgo8cGF0aCBkPSJNMCAxMDMwIFEzNTAgOTE1IDczMCA5NDggUTEyMzAgOTY2IDE4MDAgODQwIFYxMTAwIEgwWiIgZmlsbD0idXJsKCN3YXRlcikiLz4KPHBhdGggZD0iTTAgMTA1NiBRNTIwIDEwMDAgMTA0NSAxMDM5IFQxODAwIDkzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZTlmZmZmIiBzdHJva2Utd2lkdGg9IjEzIiBvcGFjaXR5PSIuMzciLz4KPGcgb3BhY2l0eT0iLjI4IiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTAgMTA4MCBRNTIwIDEwMTcgMTA0NSAxMDU4IFQxODAwIDk1MCIvPjxwYXRoIGQ9Ik0wIDExMDUgUTUyMCAxMDQyIDEwNDUgMTA4MyBUMTgwMCA5NzUiLz48L2c+CjxnIG9wYWNpdHk9Ii44Ij48Y2lyY2xlIGN4PSIxMDQiIGN5PSI5NTIiIHI9IjQiIGZpbGw9IiNmZWY5YjkiLz48Y2lyY2xlIGN4PSIxMzciIGN5PSI5NDAiIHI9IjUiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIxNjQiIGN5PSI5NTMiIHI9IjMiIGZpbGw9IiNmZmJmZTMiLz48Y2lyY2xlIGN4PSIxNTgwIiBjeT0iODU1IiByPSI1IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iMTUyMCIgY3k9Ijg3NSIgcj0iMyIgZmlsbD0iI2ZmYmZlMyIvPjxjaXJjbGUgY3g9IjE2OTAiIGN5PSI4MTIiIHI9IjQiIGZpbGw9IiNmZmYiLz48L2c+Cjwvc3ZnPg==') center bottom / cover no-repeat;filter:saturate(1.12)}
+.aero-landscape:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(183,238,255,.05),rgba(215,251,255,.15) 55%,rgba(223,255,238,.3))}
+.atmosphere{position:fixed;inset:0;pointer-events:none;z-index:-2;overflow:hidden}
+.bubble{position:absolute;display:block;border-radius:50%;border:1px solid rgba(255,255,255,.88);background:radial-gradient(ellipse at 29% 20%,rgba(255,255,255,.9) 0%,rgba(255,255,255,.29) 10%,transparent 30%),radial-gradient(ellipse at 80% 85%,rgba(52,193,228,.31),transparent 42%),radial-gradient(circle at 45% 41%,rgba(255,255,255,.02) 35%,rgba(181,248,255,.4) 85%,rgba(255,255,255,.9) 98%);box-shadow:inset -13px -14px 28px rgba(13,147,187,.11),inset 9px 10px 15px rgba(255,255,255,.69),0 16px 55px rgba(21,112,173,.14),0 2px 9px rgba(255,255,255,.7);backdrop-filter:blur(2px);animation:bubblefloat 12s ease-in-out infinite}
+.bubble:before{content:'';position:absolute;left:15%;top:12%;width:43%;height:19%;background:rgba(255,255,255,.77);filter:blur(4px);border-radius:70% 45% 65% 65%;transform:rotate(-29deg)}
+.bubble-a{width:220px;height:220px;left:-95px;top:115px}.bubble-b{width:145px;height:145px;right:3%;top:140px;animation-delay:-4s}.bubble-c{width:86px;height:86px;right:20%;top:36px;animation-delay:-7s}.bubble-d{width:180px;height:180px;right:-72px;bottom:70px;animation-delay:-2s}.bubble-e{width:60px;height:60px;left:16%;bottom:95px;animation-delay:-5s}
+@keyframes bubblefloat{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(9px,-24px,0)}}
+.app{max-width:2020px;margin:auto;padding:16px clamp(15px,2vw,36px) 30px}
+a{text-decoration:none}
+button,select,input{font-family:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #12abdc;outline-offset:3px}
+.topbar{min-height:69px;margin:0 0 22px;padding:10px 17px;gap:18px;border:1px solid #fff;border-radius:23px;background:linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(235,255,255,.69) 46%,rgba(157,222,240,.48) 50%,rgba(235,251,255,.69) 100%);box-shadow:0 4px 22px rgba(20,93,152,.16),inset 0 1px 1px #fff,inset 0 -2px 5px rgba(255,255,255,.38);backdrop-filter:blur(30px) saturate(1.6);-webkit-backdrop-filter:blur(30px) saturate(1.6)}
+.brand{min-width:250px;gap:11px}.brand-icon{width:43px;height:43px;border-radius:50%;color:#fff;border:1px solid white;background:radial-gradient(circle at 30% 17%,white 0%,#a6fdec 15%,#2eddb3 30%,#03a5ba 63%,#076cb5 100%);box-shadow:inset 0 -6px 8px #007da947,inset 0 5px 5px #fff9,0 4px 12px #0685af42,0 0 0 3px #ffffff85}.brand-icon svg{width:26px;height:26px;filter:drop-shadow(0 1px 1px #0d708a)}.brand-name{font:900 20px/1 'Nunito',sans-serif;letter-spacing:-.9px;color:#164864}.brand-name span{color:#048f9c}.brand-sub{font:700 8px/1.8 'DM Mono',monospace;color:#4b91a0;letter-spacing:.08em}
+.top-divider{background:#3295b628}.navlinks{gap:5px;align-items:center}.navlink{display:block;padding:10px 15px;font:800 11px 'Nunito',sans-serif;letter-spacing:0;color:#577b8d;border:1px solid transparent;border-radius:100px;transition:.22s}.navlink.active,.navlink:hover{color:#026b94;border-color:#fff;background:linear-gradient(180deg,#ffffffba,#e5fbff81);box-shadow:0 2px 9px #1789a31f,inset 0 1px white}
+.topright{gap:9px;flex-shrink:0}.top-tool{height:35px;padding:0 12px;white-space:nowrap;background:linear-gradient(180deg,#fff9,#ddf9ff87);color:#25738a;border:1px solid white;border-radius:20px;font-weight:900;font-size:10px;box-shadow:0 3px 10px #4aa3b81a,inset 0 1px #fff;transition:transform .2s,background .2s}.top-tool:hover{transform:translateY(-2px);background:#fff}.top-tool[aria-pressed=true]{background:#b0ffea;color:#006c65}
+.sys-pill{font-size:9px;color:#0b856e;border:1px solid white;background:linear-gradient(180deg,#f8fffac7,#c7ffe1a3);padding:9px 12px;box-shadow:inset 0 1px white,0 3px 8px #189e7540}.status-dot{background:#16c989;box-shadow:0 0 0 4px #38cd7b20,0 0 15px #3ee5ac99}.top-avatar{width:36px;height:36px;border:1px solid #fff;border-radius:50%;color:#087f9c;background:radial-gradient(circle at 30% 20%,white,#abf5fa 37%,#24bbcb 100%);font-size:21px;box-shadow:inset 0 2px 4px #fff9,0 3px 12px #048fab55}
+.pagelead{min-height:142px;align-items:center;gap:10px;margin:0 0 20px;padding:10px 4px 0;position:relative}
+.eyebrow{font:900 10px 'Nunito',sans-serif;letter-spacing:.19em;color:#086c88;margin:0 0 8px;text-shadow:0 1px #fff7}.aero-spark{font-size:14px;color:#fff;filter:drop-shadow(0 0 4px #1dabc1)}
+.pagelead h1{font:900 clamp(28px,3vw,49px)/1.14 'Nunito',sans-serif;letter-spacing:-2.2px;margin:0 0 6px;color:#fff;text-shadow:0 2px 0 #167ea55c,0 3px 18px #166ca180}
+.pagelead h1 em{color:#e9ff8e;text-shadow:0 2px 2px #367e703d,0 0 25px #d4ffb68a}.pagelead p{font-size:13px;color:#07526c;font-weight:800;text-shadow:0 1px 0 #ffffffc2}
+.lead-coords{font-size:9px;color:#205d70;border-color:#ffffff8a;font-weight:800}.live-pill{color:#075d71;background:#ffffffa8;border-color:white;border-radius:60px;font-weight:900;box-shadow:0 3px 13px #137e9f20}
+.dashboard{grid-template-columns:245px minmax(460px,1fr) 275px;gap:14px;align-items:start}.leftcol,.rightcol,.centercol{gap:14px}.glass{border-radius:22px;background:linear-gradient(148deg,rgba(255,255,255,.82),rgba(237,255,253,.64) 32%,rgba(202,242,250,.53) 78%,rgba(246,255,255,.72));border:1px solid rgba(255,255,255,.95);box-shadow:0 18px 45px rgba(4,88,130,.15),0 4px 12px rgba(23,104,123,.05),inset 0 1px 1px #fff,inset 0 -1px 1px #8bd0d44a;backdrop-filter:blur(27px) saturate(1.6);-webkit-backdrop-filter:blur(27px) saturate(1.6)}
+.block{padding:17px}.block-head{margin-bottom:13px}.section-title{font:900 12px 'Nunito',sans-serif;color:#16566d;letter-spacing:.018em;text-transform:none}.section-title:before{content:'✦';font-size:10px;color:#27bda4;margin-right:8px}.microtag{color:#0b8b87;border:1px solid #ffffffd9;background:#eafff0a6;border-radius:20px;padding:4px 8px;font-size:8px;font-weight:700}.microtag.gray{color:#428396;border-color:#fff;background:#ffffff69}.mini-caption{font:800 9px 'Nunito',sans-serif;color:#568b9d;letter-spacing:.13em}
+label{color:#356b7d;font-size:11px;font-weight:800}label.chk{color:#1a5d70}label b{color:#078bae}.control-label{color:#1f5b70;font-weight:800}select{background:linear-gradient(180deg,#fff,#daf8ff);color:#154a61;border:1px solid white;border-radius:12px;padding:9px 10px;box-shadow:inset 0 1px white,0 2px 8px #248dbb18;font-weight:800}select:hover{border-color:#42b4ce}select#site{height:43px}
+input[type=checkbox]{width:18px;height:18px;flex-basis:18px;background:linear-gradient(180deg,#fff,#b6e9f0);border:1px solid #86cada;border-radius:7px;box-shadow:inset 0 1px white,0 2px 5px #007eab13}input[type=checkbox]:checked{background:linear-gradient(180deg,#79fbd3,#08b69e);border-color:#ffffff;box-shadow:inset 0 1px #fff,0 2px 8px #08bda950}input[type=checkbox]:checked:after{color:#fff;line-height:16px}
+input[type=range]{accent-color:#0caac0;cursor:pointer}
+.btn{background:linear-gradient(180deg,rgba(255,255,255,.99) 0%,rgba(224,252,255,.96) 43%,rgba(188,229,246,.93) 50%,rgba(227,250,255,.96) 100%);border:1px solid white;color:#24667d;border-radius:13px;min-height:39px;box-shadow:inset 0 2px 2px #fff,0 3px 9px rgba(29,116,154,.15);font-size:10px;font-weight:900;text-shadow:0 1px white}
+.btn:hover{background:linear-gradient(180deg,#fff,#cefff3);border-color:white;box-shadow:0 5px 16px rgba(29,116,154,.27);transform:translateY(-2px)}.btn.danger{color:#b94c67;border-color:white}
+.divider{background:linear-gradient(90deg,transparent,#fff,transparent)}.hint{color:#4b8190}.site-overview{height:88px;border:1px solid #fff;border-radius:18px;background:linear-gradient(120deg,rgba(255,255,255,.85),rgba(114,225,234,.68)),radial-gradient(circle at 88% 10%,#fff,transparent);box-shadow:inset 0 1px #fff;}
+.site-overview:after{border-color:#fff9;box-shadow:0 0 0 18px #ffffff37,0 0 0 38px #ffffff1a}.site-symbol{border:1px solid #fff;background:radial-gradient(circle at 28% 15%,#ffffff,#9df8cf,#1dabad);border-radius:50%;box-shadow:0 4px 11px #00a6a449,inset 0 2px #fff}.site-symbol svg{stroke:#0b747c}.site-details strong{font:900 13px 'Nunito',sans-serif;color:#13566f}.site-details small{color:#267f84}
+.layer-line{border-color:#ffffff9a}.layer-icon{border-radius:50%;background:linear-gradient(140deg,#fff,#c0fce9);color:#0b9aa0;border:1px solid #fff;box-shadow:0 2px 6px #36bcb73b}.forecast-block{border:1px solid white}.forecast-block .block-head{margin-bottom:4px}.forecast-block .control-value{gap:14px}#strip{grid-template-columns:repeat(48,minmax(0,1fr));gap:3px}#strip button{height:30px;border-radius:9px;border:1px solid #fff9}#strip .ok{background:linear-gradient(180deg,#bbffd2,#27d4a0)}#strip .no{background:linear-gradient(180deg,#ffdab9,#ff957e)}#strip .sel{border-color:#fff;box-shadow:0 0 0 2px #039eba,0 0 15px #fff;opacity:1}.forecast-time{color:#0b8396}.forecast-legend{color:#3b7a86}.weather-info{color:#4b7988}
+.map-card{height:clamp(535px,68vh,730px)!important;min-height:535px!important;padding:7px;border-radius:27px;border:1px solid #ffffff;overflow:hidden;box-shadow:0 22px 50px #0a7d9b4f,0 0 0 4px #ffffff44,inset 0 1px 3px #fff;background:linear-gradient(140deg,#fff,#acf0ed,#83cbdc,#fff)}
+#map{height:100%!important;min-height:0!important;border-radius:21px;background:#78dbe9;overflow:hidden}
+.map-card:after{content:'';position:absolute;inset:7px;border-radius:21px;pointer-events:none;z-index:402;box-shadow:inset 0 13px 22px #ffffff7a,inset 0 -13px 22px #03487166,inset 0 0 0 1px #ffffff9a}
+.map-glow{display:none}.map-overlay-top{top:24px;left:22px;right:22px}.map-overlay-bottom{left:22px;right:22px;bottom:25px}.map-top-left{gap:7px}
+.map-mode,.map-location,.map-bottom-info{color:#15566d;background:linear-gradient(165deg,rgba(255,255,255,.88),rgba(206,249,252,.73));border:1px solid #fff;border-radius:17px;box-shadow:inset 0 1px white,0 3px 17px #063f5a4c;backdrop-filter:blur(18px)}.map-mode{font:800 10px 'Nunito',sans-serif;padding:10px 14px;letter-spacing:.03em}.map-mode span{color:#07b58b}.map-location{color:#287786;font:800 10px 'Nunito',sans-serif;padding:7px 12px}.map-reticle{border:1px solid #fff;background:linear-gradient(140deg,#fffc,#80dfe9ad);box-shadow:0 2px 14px #01334c5e,inset 0 1px #fff}.map-reticle:before,.map-reticle:after{background:#ffffffbd}
+.map-view-switch{display:flex;gap:4px;padding:4px;width:max-content;max-width:100%;border-radius:100px;border:1px solid white;background:linear-gradient(180deg,#fff,#c9eff3cf);box-shadow:0 3px 13px #005d7840;pointer-events:auto}.map-theme-btn{background:transparent;color:#347b8d;border:0;border-radius:99px;padding:6px 9px;font:900 10px 'Nunito',sans-serif}.map-theme-btn.active{background:linear-gradient(180deg,#6bdbfb,#0c91bb);box-shadow:inset 0 1px 2px #fff,0 2px 6px #127f9e7d;color:#fff;text-shadow:0 1px #0585a0}
+.map-bottom-info{min-width:166px}.map-bottom-info small{color:#387b88;font:800 9px 'Nunito',sans-serif}.map-bottom-info strong{font:800 11px 'Nunito',sans-serif;color:#166582}.map-coordinates{color:#fff;text-shadow:0 2px 9px #003c6f,0 1px 2px #003c6f;font-size:10px}.map-coordinates span{color:#c7ffff}.map-coordinates strong{font:800 10px 'Nunito',sans-serif;color:#fff}.map-corner-emblem{position:absolute;z-index:490;bottom:29px;left:50%;transform:translateX(-50%);font:900 9px 'Nunito',sans-serif;letter-spacing:.14em;color:#fff;text-shadow:0 1px 7px #00596b;pointer-events:none}
+.leaflet-control-zoom{border:1px solid white!important;border-radius:13px!important;overflow:hidden;box-shadow:0 2px 12px #005b8e69!important}.leaflet-bar a{background:linear-gradient(180deg,#fff,#c4f2f8)!important;color:#1d7795!important;border-color:#fff!important}.leaflet-bar a:hover{background:#e6fffa!important}.leaflet-control-layers{background:#effffbe9!important;color:#26677a!important;border:1px solid #fff!important;border-radius:14px!important;box-shadow:0 3px 12px #005b8e40!important}.leaflet-control-attribution{background:#f2fffcbd!important;color:#30768a!important}.leaflet-control-attribution a{color:#008eaa!important}
+.map-legend{background:linear-gradient(130deg,rgba(255,255,255,.8),rgba(230,255,251,.63));border:1px solid #fff;border-radius:15px;padding:10px 12px;box-shadow:0 3px 10px #177fa31d;backdrop-filter:blur(20px)}.map-legend span{color:#246b79;font:900 9px 'Nunito',sans-serif}.map-legend i{background:linear-gradient(90deg,#f76d7a,#fbb94f,#a6de62,#07a889);height:7px;border-radius:99px}.map-desc{color:#225a72;font-size:10px;font-weight:800;line-height:1.6}.science-note{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:15px;border:1px solid #fff;background:linear-gradient(110deg,rgba(255,254,230,.91),rgba(255,255,255,.64));box-shadow:0 3px 10px #448c8619;color:#456d75;font-size:10px;line-height:1.6}.science-note b{color:#22687b}.science-icon{font-size:19px;color:#19a1b2;line-height:1}
+.kpis{gap:11px}.kpi{padding:15px 14px 13px;min-height:118px;overflow:hidden}.kpi:before{content:'';position:absolute;top:0;left:0;width:100%;height:48%;border-radius:22px 22px 55% 55%;background:linear-gradient(180deg,#ffffff9c,#fff1);pointer-events:none}.kpi:after{border:1px solid #ffffff8c;box-shadow:0 0 0 12px #ffffff2e}.kpi-label{position:relative;color:#38818b;font:900 9px 'Nunito',sans-serif;letter-spacing:.04em}.kpi-number{position:relative;color:#176582;font:900 clamp(25px,2.4vw,35px) 'Nunito',sans-serif;letter-spacing:-1.6px;margin-top:12px}.kpi-number .unit{color:#4e8b9b;font-size:10px}.kpi-desc{color:#408e91;font:900 9px 'Nunito',sans-serif}.kpi.special .kpi-number{color:#0ba681}.kpi .kpi-dot{background:#0ad8aa}
+.mission-status{border:1px solid #fff;background:linear-gradient(110deg,#ffffffb7,#c3fdf1aa);border-radius:16px}.mission-status span{color:#4b8c99;font-weight:800}.mission-status strong{color:#039976}.mission-status div[style]{color:#155f70}
+.launch-btn{height:48px;border:1px solid #fff;border-radius:16px;background:linear-gradient(180deg,#e9ffe3 0%,#abffcc 39%,#38dcb1 51%,#27c6ab 100%);color:#07585e;text-shadow:0 1px #ffffff7d;font:900 11px 'Nunito',sans-serif;box-shadow:inset 0 2px 2px #fff,0 5px 17px #11ae8c60}.launch-btn:hover{background:linear-gradient(180deg,#fff,#a3ffdf,#1ac6b3);box-shadow:0 8px 22px #11ae8c88}.statrow{color:#386e7f;font-weight:800}.statrow strong{color:#155b6f}.stat-meter{height:7px;background:#aad9e49c;border:1px solid #fff8}.stat-meter span{background:linear-gradient(90deg,#31cfe1,#15d3a0,#adf57a);box-shadow:inset 0 1px #fff9}
+.dpad button{border:1px solid white;border-radius:15px;background:linear-gradient(180deg,#fff,#cef5fb 45%,#95d9e9 52%,#d8faff);box-shadow:inset 0 2px #fff,0 3px 9px #0986a033;color:#1c7893;font-weight:900}.dpad button:hover{background:linear-gradient(180deg,#fff,#9df5e2);transform:translateY(-1px)}.dpad button.pri{background:linear-gradient(180deg,#d7ffbd,#43dfae 52%,#1abdb2);color:#065e63;border-color:#fff;box-shadow:inset 0 2px #fff,0 3px 12px #16bda455}.dpad .empty{border-color:#fff6;background:#ffffff2e}.manual-help{color:#457c8b}.manual-help code{color:#086a8b;background:#ffffffa5}
+.telemetry dt{color:#4d8393;font-weight:800}.telemetry dd{color:#125b73}.telemetry dd.warn{color:#ad4350}.telemetry dt,.telemetry dd{border-color:#ffffffaa}th{color:#427f8b}td{color:#19566d}th,td{border-color:#fff9}#msg{background:linear-gradient(125deg,#e7fff5a8,#ffffff92);border:1px solid #fff;color:#17697a;border-radius:14px;font-weight:800}#data{color:#437988;font-size:10px}.footnote{color:#e9ffff;text-shadow:0 1px 8px #1c7296;font-weight:800}.footnote b{color:#fff}
+/* Composition: forecast timeline sits directly below map KPI cards */
+.centercol>.forecast-block{padding:14px 18px 16px}
+/* Restore the earlier space-tech direction as an optional functional second theme. */
+body.ocean{--ink:#e8fcff;--mut:#9bc4cb;--acc:#83f4da;--good:#91f5af;color:#e8fcff}
+body.ocean .aero-landscape{filter:saturate(.83) brightness(.35) hue-rotate(19deg)}body.ocean .atmosphere{opacity:.55}
+body.ocean .glass{background:linear-gradient(140deg,rgba(5,37,54,.88),rgba(13,61,72,.74));border-color:rgba(177,254,249,.31);box-shadow:0 15px 45px #00142170,inset 0 1px #ccfff626}
+body.ocean .topbar{background:linear-gradient(180deg,rgba(6,43,59,.91),rgba(23,84,97,.85));border-color:#acfaf35c}
+body.ocean .brand-name,body.ocean .section-title,body.ocean .site-details strong,body.ocean .control-label,body.ocean label.chk,body.ocean .mission-status div[style],body.ocean .statrow strong,body.ocean .telemetry dd,body.ocean td,body.ocean .map-legend span,body.ocean .kpi-number{color:#e8fcff!important}
+body.ocean .brand-sub,body.ocean .navlink,body.ocean .microtag,body.ocean label,body.ocean .statrow,body.ocean .telemetry dt,body.ocean th,body.ocean #data,body.ocean .kpi-label,body.ocean .kpi-desc,body.ocean .manual-help{color:#a9d2d9!important}
+body.ocean .top-tool,body.ocean .navlink.active{background:#0c4c65;color:#c4fff5;border-color:#83efdb6d}
+body.ocean .site-overview,body.ocean .mission-status,body.ocean #msg{background:linear-gradient(125deg,#1a6d7a80,#14516d8a);border-color:#c0fff457;color:#dbfbfc}
+body.ocean .science-note,body.ocean .map-legend{background:linear-gradient(125deg,#0c3856ee,#144e5de0);border-color:#b6fff15b;color:#c7e6e9}
+body.ocean .science-note b{color:#fff}
+body.ocean .pagelead p{color:#e4faff;text-shadow:0 1px 5px #003e55}
+body.ocean .eyebrow{color:#b7ffe0;text-shadow:0 1px 4px #003e55}
+body.ocean .forecast-time{color:#befff7}
+body.focus-map .dashboard{grid-template-columns:minmax(0,1fr)}body.focus-map .leftcol,body.focus-map .rightcol{display:none}body.focus-map .centercol{grid-column:1}body.focus-map .map-card{height:clamp(600px,75vh,920px)!important}
+@media(min-width:1700px){.dashboard{grid-template-columns:265px minmax(530px,1fr) 285px}.app{padding-left:30px;padding-right:30px}.map-card{height:clamp(590px,70vh,820px)!important}}
+@media(max-width:1280px){.dashboard{grid-template-columns:220px minmax(350px,1fr) 240px;gap:11px}.app{padding:13px 15px 24px}.block{padding:13px}.topbar{gap:9px}.brand{min-width:205px}.top-tool{padding:0 9px;font-size:9px}.navlink{padding:8px 9px}.kpi{padding:12px}.kpi-number{font-size:25px}.kpi-label{font-size:8px}.map-card{height:clamp(520px,67vh,720px)!important}}
+@media(max-width:1080px){.dashboard{grid-template-columns:minmax(0,1fr) 265px}.centercol{grid-column:1;grid-row:1}.rightcol{grid-column:2;grid-row:1/3}.leftcol{grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.leftcol>.glass:last-child{grid-column:1/-1}.navlinks{display:none}.brand{margin-right:auto}.pagelead{min-height:126px}.map-card{min-height:510px!important}}
+@media(max-width:720px){.app{padding:10px 10px 24px}.topbar{min-height:66px;margin-bottom:12px;padding:8px 10px;border-radius:18px}.brand{min-width:0}.brand-icon{width:37px;height:37px}.brand-name{font-size:16px}.brand-sub{font-size:7px}.top-tool{padding:0 9px}#focus-toggle{display:none}.top-avatar,.top-divider,.lead-side{display:none}.sys-pill{display:none}.pagelead{min-height:130px;padding:12px 5px 4px;margin-bottom:14px}.pagelead h1{font-size:clamp(29px,7vw,40px);line-height:1.13;letter-spacing:-1.4px}.pagelead p{font-size:11px;line-height:1.45;max-width:320px}.eyebrow{font-size:9px}.dashboard{display:flex;flex-direction:column;gap:13px}.centercol{order:0;width:100%}.leftcol{order:1;display:flex;width:100%}.rightcol{order:2;display:flex;width:100%}.map-card{min-height:510px!important;height:62vh!important}#map{height:100%!important}.map-view-switch{max-width:215px}.map-theme-btn{font-size:9px;padding:5px 7px}.map-reticle,.map-location,.map-corner-emblem{display:none}.map-mode{font-size:9px;padding:9px 10px}.map-bottom-info{min-width:0;padding:9px}.map-bottom-info strong{font-size:10px}.map-coordinates{font-size:8px}.map-coordinates strong{font-size:9px}.map-overlay-bottom{left:13px;right:13px;bottom:17px}.map-overlay-top{left:14px;right:14px;top:17px}.block{padding:17px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.forecast-block{padding:17px!important}#strip{grid-template-columns:repeat(24,minmax(0,1fr))}#strip button{height:23px}.science-note{font-size:10px}.footnote{flex-direction:column;align-items:flex-start;gap:6px}body.focus-map .leftcol,body.focus-map .rightcol{display:flex}body.focus-map .map-card{height:62vh!important}}
+@media(max-width:395px){#ocean-toggle{font-size:0}#ocean-toggle:first-letter{font-size:18px}.brand-name{font-size:15px}.map-coordinates{max-width:125px}.map-bottom-info{max-width:135px}.map-card{min-height:440px!important;height:56vh!important}}
+@media(prefers-reduced-motion:reduce){.bubble,.status-dot{animation:none!important}}
+</style></head>
+<body>
+<div aria-hidden="true" class="aero-landscape"></div>
+<div aria-hidden="true" class="atmosphere"><i class="bubble bubble-a"></i><i class="bubble bubble-b"></i><i class="bubble bubble-c"></i><i class="bubble bubble-d"></i><i class="bubble bubble-e"></i></div>
+<div class="app">
+<header class="topbar">
+<div class="brand"><div class="brand-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 32 32"><path d="M16 27V15M16 15C8 15 6 10 6 4c7 0 10 3 10 11Zm0 4c0-7 3-10 10-11 0 7-3 11-10 11Z"></path><path d="M10 27h12"></path></svg></div><div><div class="brand-name">SEED<span>WIND</span></div><div class="brand-sub">LIVING EARTH LAB  /  KENYA</div></div></div>
+<div class="top-divider"></div><nav aria-label="Dashboard sections" class="navlinks"><a class="navlink active" href="#map-panel">◈   Explore</a><a class="navlink" href="#layer-panel">◎   Layers</a><a class="navlink" href="#forecast-panel">≋   Weather</a></nav>
+<div class="topright"><button aria-pressed="false" class="top-tool" id="focus-toggle" title="Expand the map" type="button">⛶   Focus map</button><button aria-pressed="false" class="top-tool" id="ocean-toggle" title="Switch between Aero daylight and Deep Ocean" type="button">☾   Ocean</button><div class="sys-pill"><span class="status-dot"></span><span id="source-status">DATA LOADING</span></div><div aria-hidden="true" class="top-avatar">✿</div></div>
+</header>
+<div class="pagelead"><div><div class="eyebrow"><span class="aero-spark">✦</span> EARTH OBSERVATION / KENYA / AERO OS</div><h1>Where nature meets <em>tomorrow.</em></h1><p>Explore the living landscape. Follow the wind. Discover where restoration could take root.</p></div><div class="lead-side"><div class="lead-coords">EAST AFRICA   /   KENYA<br/>MISSION   /   SEEDWIND 01</div><div class="live-pill"><span class="status-dot"></span><span id="live-mode">MANUAL CONTROL</span></div></div></div>
+<div class="dashboard">
+<!-- left control stack -->
+<div class="leftcol">
+<section class="glass block"><div class="block-head"><h2 class="section-title">Operation area</h2><span class="microtag gray">01 / SITE</span></div>
+<div class="site-overview"><div class="site-symbol"><svg viewbox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 0 1 14 0c0 6-7 12-7 12Z"></path><circle cx="12" cy="9" r="2.4"></circle></svg></div><div class="site-details"><strong>The Kenyan Highlands</strong><small>REGION • EAST AFRICA</small></div></div>
+<label for="site">Active deployment site</label><select id="site"></select>
+<div class="btn-row"><button class="btn" id="zs">⌖   Focus site</button><button class="btn" id="zr">◫   Kenya view</button></div><button class="btn full" id="here" style="margin-top:8px">⊕   Use current map center</button>
+<p id="data"></p>
+</section>
+<section class="glass block" id="layer-panel"><div class="block-head"><h2 class="section-title">Environmental layers</h2><span class="microtag gray">02 / VIEW</span></div>
+<div class="layer-line"><label class="chk"><input checked="" id="l-t" type="checkbox"/><span class="layer-icon">◈</span><span class="control-label">Terrain &amp; soil proxy</span></label></div>
+<div class="control-value"><label for="tv">Terrain visualization</label><select id="tv"><option value="elev">Elevation</option><option value="score">Planting score</option></select></div>
+<div class="layer-line"><label class="chk"><input checked="" id="l-w" type="checkbox"/><span class="layer-icon">≋</span><span class="control-label">Atmospheric wind</span></label></div>
+<div class="control-value"><label for="wl">Wind altitude</label><select id="wl"><option value="0">10 m</option><option selected="" value="1">80 m</option><option value="2">120 m</option></select></div>
+<div class="layer-line"><label class="chk"><input checked="" id="l-m" type="checkbox"/><span class="layer-icon">◎</span><span class="control-label">Balloon &amp; mission</span></label></div>
+</section>
+
+</div>
+<!-- center: satellite geospatial map -->
+<main class="centercol">
+<div class="map-card" id="map-panel"><div aria-label="Interactive map of Kenya with satellite, terrain, wind and balloon layers" id="map"></div><div class="map-glow"></div>
+<div class="map-overlay-top"><div class="map-top-left"><div class="map-mode"><span>●</span>   KENYA / EARTH VIEW</div><div class="map-location" id="flight-site">Laikipia plateau</div><div aria-label="Map basemap" class="map-view-switch" role="group"><button aria-pressed="true" class="map-theme-btn active" data-map="satellite" type="button">Satellite</button><button aria-pressed="false" class="map-theme-btn" data-map="terrain" type="button">Terrain</button><button aria-pressed="false" class="map-theme-btn" data-map="streets" type="button">Streets</button></div></div><div aria-hidden="true" class="map-reticle"></div></div>
+<div class="map-overlay-bottom"><div class="map-bottom-info"><small>MISSION STATUS   ↗</small><strong id="mission-phase">READY TO DEPLOY</strong></div><div class="map-coordinates"><span>CURSOR COORDINATES</span><br/><strong id="cursor-coords">MOVE OVER THE MAP</strong><br/><span>WGS84 / KENYA</span></div></div>
+<div aria-hidden="true" class="map-corner-emblem">◉  EARTH / LIVE MAP</div></div>
+<div class="kpis"><div class="glass kpi"><div class="kpi-label"><span class="kpi-dot"></span>FLIGHT ALTITUDE</div><div class="kpi-number"><span id="hero-alt">0</span><span class="unit">m</span></div><div class="kpi-desc">REAL-TIME / AGL</div></div><div class="glass kpi"><div class="kpi-label"><span class="kpi-dot"></span>WIND VELOCITY</div><div class="kpi-number"><span id="hero-wind">0.0</span><span class="unit">km/h</span></div><div class="kpi-desc">AT BALLOON ALTITUDE</div></div><div class="glass kpi special"><div class="kpi-label"><span class="kpi-dot"></span>SEEDS DEPLOYED</div><div class="kpi-number"><span id="hero-seeds">0</span><span class="unit">/ 40</span></div><div class="kpi-desc">MISSION OUTPUT</div></div><div class="glass kpi"><div class="kpi-label"><span class="kpi-dot"></span>SURVEY COVERAGE</div><div class="kpi-number"><span id="hero-coverage">0</span><span class="unit">%</span></div><div class="kpi-desc">TERRAIN SCANNED</div></div></div>
+<div class="map-legend"><span>LOW PROXY SCORE</span><i></i><span>HIGH PROXY SCORE</span><span style="margin-left:auto">◎ suggested target   ● planted seed</span></div>
+<div class="science-note"><span class="science-icon">ⓘ</span><span><b>Research preview, not a planting recommendation.</b> Elevation and weather are queried from external services. Suitability uses experimental proxy inputs, including simulated canopy and bare-soil factors. Validate native habitat, species and land-use permission before any real planting.</span></div><p class="map-desc">EXPLORE   ✦   Select a site, focus its survey zone, or click the map for a manual destination. WASD / arrows steer · E/Q altitude · Space drops a simulated seed.</p>
+<section class="glass block forecast-block" id="forecast-panel"><div class="block-head"><h2 class="section-title">Forecast timeline</h2><span class="microtag">API / 48 H</span></div>
+<div class="control-value"><label for="hr">Forecast start hour</label><b class="forecast-time" id="hl">Loading</b></div><input id="hr" max="47" min="0" type="range" value="0"/><div class="mini-caption">48-hour flight window   /   wind safety</div><div aria-label="Forecast hours. Green hours are calm enough to fly." id="strip" role="group"></div><div class="forecast-legend"><span><i></i>CALM</span><span><i class="no"></i>WIND ALERT</span></div><p class="weather-info" id="win"></p><div class="divider"></div><label class="chk"><input checked="" id="fol" type="checkbox"/> Advance weather with flight time</label>
+</section></main>
+<!-- mission controls right -->
+<aside aria-label="Mission control dashboard" class="rightcol">
+<section class="glass block"><div class="block-head"><h2 class="section-title">Mission control</h2><span class="microtag">03 / FLIGHT</span></div>
+<div class="mission-status"><div><span>MISSION READINESS</span><div style="font:600 13px 'Space Grotesk',sans-serif;margin-top:5px">Autonomous Seed Flight</div></div><strong>● STANDBY</strong></div>
+<button class="launch-btn" id="start"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="m4 17 6-6M7 21l6-6M11 13c1-5 5-8 10-10-2 5-5 9-10 10ZM6 12l-3-2 5-5 5 1M12 18l2 3 5-5-1-5"></path></svg> LAUNCH SEED MISSION   ↗</button>
+<div class="button-matrix"><button class="btn" id="home">⌂   Return</button><button class="btn" id="pause">Ⅱ   Pause</button><button class="btn danger" id="reset">↺   Reset</button></div>
+<div class="divider"></div><div class="mini-caption">Live mission resources</div>
+<div class="statsmini"><div><div class="statrow"><span>Battery reserve</span><strong><span id="hero-battery">100</span>%</strong></div><div class="stat-meter"><span id="battery-fill" style="width:100%"></span></div></div><div><div class="statrow"><span>Seed payload</span><strong><span id="count-left">40</span> / 40</strong></div><div class="stat-meter"><span id="seed-fill" style="width:100%"></span></div></div><div><div class="statrow"><span>Survey progress</span><strong id="t-scan">0%</strong></div><div class="stat-meter"><span id="coverage-fill" style="width:0%"></span></div></div></div>
+<div class="divider"></div><div class="mini-caption">Flight configuration</div>
+<div class="range-pair"><div><label for="sa">Survey altitude</label><select id="sa"><option selected="" value="80">80 m</option><option value="120">120 m</option></select></div><div><label for="da">Drop altitude</label><select id="da"><option selected="" value="10">10 m</option><option value="20">20 m</option><option value="30">30 m</option></select></div></div>
+<div class="speed-row"><label for="sp">Simulation speed <select id="sp" style="display:block;margin-top:7px"><option value="1">1×</option><option value="10">10×</option><option selected="" value="60">60×</option><option value="200">200×</option></select></label></div>
+<label for="thr">Minimum proxy score <b id="v-thr">0.60</b></label><input id="thr" max="0.8" min="0.4" step="0.01" type="range" value="0.6"/>
+</section>
+<section class="glass block"><div class="block-head"><h2 class="section-title">Manual flight control</h2><span class="microtag gray">PILOT MODE</span></div>
+<div class="dpad"><button aria-label="Climb" data-k="climb" title="Ascend (E)">E ↑</button><button aria-label="Fly north" data-k="up" title="Fly north (W)">↑</button><button aria-label="Descend" data-k="descend" title="Descend (Q)">Q ↓</button><button aria-label="Fly west" data-k="left" title="Fly west (A)">←</button><button class="pri" id="drop" title="Drop a seed (Space)">DROP</button><button aria-label="Fly east" data-k="right" title="Fly east (D)">→</button><div class="empty"></div><button aria-label="Fly south" data-k="down" title="Fly south (S)">↓</button><div class="empty"></div></div>
+<div class="manual-help">Use <code>W A S D</code> to move  •  <code>E Q</code> for altitude<br/><code>SPACE</code> to deploy payload</div>
+</section>
+<section class="glass block"><div class="block-head"><h2 class="section-title">Live telemetry</h2><span class="microtag">SYNCED</span></div>
+<p aria-live="polite" id="msg" role="status">Initializing mission telemetry…</p>
+<dl class="telemetry"><dt>Flight mode</dt><dd id="t-mode">—</dd><dt>Position</dt><dd id="t-pos">—</dd><dt>Altitude</dt><dd id="t-alt">—</dd><dt>Ground speed</dt><dd id="t-spd">—</dd><dt>Wind</dt><dd id="t-wind">—</dd><dt>Forecast time</dt><dd id="t-time">—</dd><dt>Temperature</dt><dd id="t-temp">—</dd><dt>Soil moisture</dt><dd id="t-sm">—</dd><dt>Battery</dt><dd id="t-batt">—</dd><dt>Seeds left</dt><dd id="t-seeds">—</dd><dt>Planted</dt><dd id="t-planted">—</dd></dl>
+</section>
+<section class="glass block"><div class="block-head"><h2 class="section-title">Deployment log</h2><span class="microtag gray">CSV READY</span></div><div class="tw"><table><thead><tr><th>#</th><th>Lat</th><th>Lon</th><th>Score</th><th>Miss</th><th>Alt</th><th>By</th></tr></thead><tbody id="log"><tr><td colspan="7">No seeds planted yet.</td></tr></tbody></table></div><button class="btn full" id="copy" style="margin-top:12px">⇩   COPY MISSION CSV</button></section>
+</aside>
+</div>
+<footer class="footnote"><span>SEEDWIND FLIGHT OPERATIONS   /   KENYA</span><span>FORECAST <b id="readout-clock">—</b>  •  OPEN-METEO + LEAFLET · EXPERIMENTAL SCORING</span></footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s),clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const SITE=1200,N=24,CS=SITE/N,VMAX=4,LAY=[10,80,120],VT=7,SEEDS=40,HOME={x:60,y:60};
+const SITES={laikipia:{n:'Laikipia plateau',lat:.25,lon:36.9},kitui:{n:'Kitui',lat:-1.37,lon:38.01},narok:{n:'Narok, Mau fringe',lat:-1.08,lon:35.87},
+ turkana:{n:'Turkana, Lodwar',lat:3.12,lon:35.6},taita:{n:'Taita Hills',lat:-3.4,lon:38.36},baringo:{n:'Baringo, Marigat',lat:.47,lon:35.99}};
+for(const k in SITES)$('#site').add(new Option(SITES[k].n,k));
+const S={keys:{},speed:60,thr:.6,paused:false,layers:{terrain:true,wind:true,mission:true},view:'elev',wl:1,sa:80,da:10,follow:true,
+ h0:0,nh:48,nowIdx:0,t:0,cells:null,elev:null,wp:[],wf:[],times:[],site:{...SITES.laikipia}};
+const say=m=>$('#msg').textContent=m;
+const mLon=lat=>111320*Math.cos(lat*Math.PI/180);
+const toLL=(x,y)=>[S.site.lat+(SITE/2-y)/111320,S.site.lon+(x-SITE/2)/mLon(S.site.lat)];
+const toXY=(la,lo)=>[(lo-S.site.lon)*mLon(S.site.lat)+SITE/2,SITE/2-(la-S.site.lat)*111320];
+// ---------- map ----------
+const map=L.map('map',{zoomControl:true}).setView([0.6,37.7],6);
+const kenyaBounds=L.latLngBounds([[-4.75,33.85],[5.40,41.95]]);
+function zoomKenya(){map.fitBounds(kenyaBounds,{padding:[12,12]})}
+const tile=(u,a)=>L.tileLayer(u,{maxZoom:18,attribution:a});
+const esri=tile('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','Imagery © Esri, Maxar, Earthstar Geographics');
+const topo=tile('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}','Tiles © Esri');
+const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'});
+esri.addTo(map);L.control.layers({'Satellite':esri,'Topographic':topo,'Street map':osm}).addTo(map);
+const basemaps={satellite:esri,terrain:topo,streets:osm};
+document.querySelectorAll('.map-theme-btn').forEach(btn=>btn.addEventListener('click',()=>{
+ for(const layer of Object.values(basemaps))if(map.hasLayer(layer))map.removeLayer(layer);
+ basemaps[btn.dataset.map].addTo(map);
+ document.querySelectorAll('.map-theme-btn').forEach(b=>{const selected=b===btn;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected))});
+}));
+map.on('mousemove',e=>{$('#cursor-coords').textContent=e.latlng.lat.toFixed(4)+'° / '+e.latlng.lng.toFixed(4)+'°'});
+const siteMarkers=Object.entries(SITES).map(([key,site])=>L.circleMarker([site.lat,site.lon],{radius:6,color:'#ffffff',weight:2,fillColor:'#15d6ad',fillOpacity:.97}).bindTooltip(site.n).on('click',()=>{S.site={...site};$('#site').value=key;load(false)}).addTo(map));
+zoomKenya();
+const cvB=document.createElement('canvas'),cvA=document.createElement('canvas'),gA=cvA.getContext('2d'),gB=cvB.getContext('2d');
+[cvB,cvA].forEach(c=>{c.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:450';map.getContainer().appendChild(c)});
+const fit=()=>{const s=map.getSize();cvA.width=cvB.width=s.x;cvA.height=cvB.height=s.y};map.on('resize',fit);fit();
+const clearB=()=>gB.clearRect(0,0,cvB.width,cvB.height);map.on('movestart zoomstart',clearB);
+const zoomSite=()=>{const a=toLL(0,0),b=toLL(SITE,SITE);map.fitBounds([a,b],{padding:[30,30]})};
+// ---------- data ----------
+const hash=(a,b)=>{const s=Math.sin(a*127.1+b*311.7+S.seed)*43758.5453;return s-Math.floor(s)};
+const vnoise=(x,y)=>{const x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+ return lerp(lerp(hash(x0,y0),hash(x0+1,y0),sx),lerp(hash(x0,y0+1),hash(x0+1,y0+1),sx),sy)};
+async function load(initial=false){
+ $('#source-status').textContent='DATA LOADING';
+ const {lat,lon}=S.site,notes=[];S.seed=Math.abs(lat*1000+lon*777)%1000;$('#data').textContent='Loading elevation and weather...';say('Loading real elevation and weather data...');
+ const n=10,pts=[];for(let j=0;j<n;j++)for(let i=0;i<n;i++)pts.push(toLL((i+.5)/n*SITE,(j+.5)/n*SITE));
+ try{const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${pts.map(p=>p[0].toFixed(5))}&longitude=${pts.map(p=>p[1].toFixed(5))}`);
+  const j=await r.json();if(!j.elevation)throw 0;S.elev=j.elevation;notes.push('Elevation: Copernicus 90 m DEM')}
+ catch(e){S.elev=Array(n*n).fill(0);notes.push('Elevation unavailable: flat demonstration terrain')}
+ const off=[-.4,-.2,0,.2,.4],g=[];off.forEach(a=>off.forEach(b=>g.push([lat+a,lon+b])));
+ try{const q='wind_speed_10m,wind_direction_10m,wind_speed_80m,wind_direction_80m,wind_speed_120m,wind_direction_120m,temperature_2m,soil_moisture_0_to_1cm';
+  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.map(p=>p[0].toFixed(3))}&longitude=${g.map(p=>p[1].toFixed(3))}&hourly=${q}&wind_speed_unit=ms&forecast_days=2&timezone=auto`);
+  let j=await r.json();j=Array.isArray(j)?j:[j];if(!j[0].hourly)throw 0;S.weatherAvailable=true;
+  const uv=(s,d)=>[-s*Math.sin(d*Math.PI/180),-s*Math.cos(d*Math.PI/180)];
+  S.wp=j.map((o,i)=>{const h=o.hourly,U=[[],[],[]],V=[[],[],[]];
+   LAY.forEach((a,k)=>h['wind_speed_'+a+'m'].forEach((s,t)=>{const c=uv(s??0,h['wind_direction_'+a+'m'][t]??0);U[k].push(c[0]);V[k].push(c[1])}));
+   return{lat:g[i][0],lon:g[i][1],U,V,temp:h.temperature_2m,sm:h.soil_moisture_0_to_1cm}});
+  S.times=j[0].hourly.time;S.nh=S.times.length;
+  const loc=new Date(Date.now()+(j[0].utc_offset_seconds||0)*1000).toISOString().slice(0,13);
+  S.nowIdx=Math.max(0,S.times.findIndex(t=>t.slice(0,13)===loc));notes.push('Weather: Open-Meteo forecast, 25 grid points, now plus 48 h')}
+ catch(e){S.weatherAvailable=false;S.nh=48;S.times=Array.from({length:48},(_,h)=>`Hour ${h}`);S.nowIdx=0;
+  S.wp=g.map(p=>({lat:p[0],lon:p[1],U:LAY.map(()=>Array(48).fill(0)),V:LAY.map(()=>Array(48).fill(0)),temp:Array(48).fill(null),sm:Array(48).fill(null)}));
+  notes.push('Weather unavailable: zero-wind DEMONSTRATION only; no actual forecast available')}
+ S.h0=S.nowIdx;$('#hr').max=S.nh-1;$('#hr').value=S.h0;
+ buildCells();reset();renderStrip();if(initial)zoomKenya();else zoomSite();$('#data').textContent=notes.join('. ')+'.';
+ $('#source-status').textContent=S.weatherAvailable?'FORECAST CONNECTED':'DEMO / NO WEATHER';
+ $('#source-status').closest('.sys-pill').classList.toggle('offline',!S.weatherAvailable);
+ say(`${S.site.n||'Custom site'} loaded. ${initial?'Select Focus site to zoom into your 1.2 km survey zone.':'Select a forecast hour, then start a mission.'}`)}
+function buildCells(){
+ const n=10,el=S.elev,E=[];
+ const bil=(gx,gy)=>{gx=clamp(gx,0,n-1);gy=clamp(gy,0,n-1);const x0=Math.floor(gx),y0=Math.floor(gy),x1=Math.min(n-1,x0+1),y1=Math.min(n-1,y0+1),fx=gx-x0,fy=gy-y0,q=(i,j)=>el[j*n+i];
+  return lerp(lerp(q(x0,y0),q(x1,y0),fx),lerp(q(x0,y1),q(x1,y1),fx),fy)};
+ for(let j=0;j<N;j++){E[j]=[];for(let i=0;i<N;i++)E[j][i]=bil((i+.5)*CS/SITE*n-.5,(j+.5)*CS/SITE*n-.5)}
+ const flat=E.flat(),mn=Math.min(...flat),mx=Math.max(...flat);S.emin=mn;S.emax=mx;
+ const cp=S.wp[12],sm=cp&&cp.sm[S.h0]!=null?cp.sm[S.h0]:.2,mb=clamp(sm/.35);S.cells=[];
+ for(let j=0;j<N;j++)for(let i=0;i<N;i++){
+  const e=E[j][i],dzx=(E[j][Math.min(N-1,i+1)]-E[j][Math.max(0,i-1)])/(2*CS),dzy=(E[Math.min(N-1,j+1)][i]-E[Math.max(0,j-1)][i])/(2*CS);
+  const deg=Math.atan(Math.hypot(dzx,dzy))*180/Math.PI,wet=(mx-e)/(mx-mn+1),moist=clamp(.7*mb+.3*wet);
+  // DEMONSTRATION ONLY: bare soil and canopy shade are synthesized placeholders, NOT satellite observations
+  const bare=clamp(1.3*vnoise(i*.18,j*.18)-.1),shade=vnoise(i*.35+40,j*.35+9)>.72?1:0;
+  let score=.35*moist+.25*bare+.25*clamp(1-deg/20)+.15*(1-shade);if(shade)score*=.4;
+  S.cells.push({i,j,x:(i+.5)*CS,y:(j+.5)*CS,e,deg,score,shade,known:false})}}
+const cellAt=(x,y)=>S.cells[clamp(Math.floor(y/CS),0,N-1)*N+clamp(Math.floor(x/CS),0,N-1)];
+// ---------- wind ----------
+function updateWF(){if(!S.wp.length)return;const hf=clamp(S.h0+(S.follow?S.t/3600:0),0,S.nh-1),a=Math.floor(hf),b=Math.min(S.nh-1,a+1),f=hf-a;S.hf=hf;
+ S.wf=S.wp.map(p=>p.U.map((_,k)=>[lerp(p.U[k][a],p.U[k][b],f),lerp(p.V[k][a],p.V[k][b],f)]))}
+function idw(la,lo,k){let su=0,sv=0,sw=0;for(let i=0;i<S.wp.length;i++){const p=S.wp[i],d=(p.lat-la)**2+(p.lon-lo)**2;if(d<1e-10)return S.wf[i][k];const w=1/d;su+=w*S.wf[i][k][0];sv+=w*S.wf[i][k][1];sw+=w}return[su/sw,sv/sw]}
+function windAt(la,lo,alt){const a=clamp(alt,10,120);let k=a<=80?0:1,t=a<=80?(a-10)/70:(a-80)/40;const A=idw(la,lo,k),B=idw(la,lo,k+1);return[lerp(A[0],B[0],t),lerp(A[1],B[1],t)]}
+const windXY=(x,y,alt)=>{const [la,lo]=toLL(x,y),[u,v]=windAt(la,lo,alt);return{x:u,y:-v}};
+// ---------- mission ----------
+const R=()=>Math.max(15,.9*S.b.alt);
+function reset(){if(S.cells)S.cells.forEach(c=>c.known=false);
+ Object.assign(S,{t:0,mode:'manual',state:'idle',queue:[],route:[],target:null,planted:[],log:[],hold:0,cand:[],dirty:true,knownN:0,warned:false,altCmd:0});
+ S.b={x:HOME.x,y:HOME.y,vx:0,vy:0,alt:0,hdg:0,batt:100,seeds:SEEDS};renderLog();updateWF()}
+function candidates(){const out=[],pts=S.planted.slice();
+ S.cells.filter(c=>c.known&&c.score>=S.thr).sort((a,b)=>b.score-a.score).forEach(c=>{
+  if(out.length<S.b.seeds&&pts.every(p=>Math.hypot(p.x-c.x,p.y-c.y)>=80)){out.push(c);pts.push(c)}});return out}
+function orderNN(list,from){const out=[];let p=from,rest=list.slice();
+ while(rest.length){rest.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));p=rest.shift();out.push(p)}return out}
+function lanes(){const r=R()*0+Math.max(15,.9*S.sa),sp=1.7*r,r2=[];let y=Math.min(r,SITE/2),k=0;
+ while(y<SITE-r*.5){r2.push({x:k%2?SITE-40:40,y},{x:k%2?40:SITE-40,y});y+=sp;k++}return r2}
+function startPlanting(){S.state='plant';S.queue=orderNN(candidates(),S.b);
+ if(S.queue.length)say(`Survey done at ${Math.round(S.knownN/S.cells.length*100)}% coverage. ${S.queue.length} spots queued.`);
+ else{S.state='return';say('No surveyed spot reaches the minimum score. Lower it or survey more, then run again.')}}
+function startAuto(){const b=S.b;if(!S.cells)return;
+ if(b.batt<25)return say('Battery too low to start. Reset to recharge.');if(!b.seeds)return say('Magazine empty. Reset to reload.');
+ S.mode='auto';S.target=null;S.queue=[];
+ if(S.knownN/S.cells.length>.9)startPlanting();else{S.state='survey';S.route=lanes();say(`Surveying at ${S.sa} m. The camera sees a ${Math.round(2*.9*S.sa)} m swath.`)}}
+function takeover(){if(S.mode==='auto'){const l=S.state==='landed';S.altCmd=S.b.alt;S.mode='manual';S.state='idle';S.queue=[];S.route=[];say(l?'Manual control.':'Pilot control. Autopilot off.')}}
+function fallDrift(alt,x,y){const t=alt/VT+.3,a=windXY(x,y,alt),b=windXY(x,y,10);return{t,dx:(a.x+b.x)/2*t*.6,dy:(a.y+b.y)/2*t*.6}}
+function dropSeed(intended){const b=S.b;if(b.seeds<=0)return say('Magazine empty.');
+ b.seeds--;const f=fallDrift(b.alt,b.x,b.y),sg=.5+.15*b.alt,lx=b.x+f.dx+(Math.random()-.5)*2*sg,ly=b.y+f.dy+(Math.random()-.5)*2*sg;
+ const c=cellAt(lx,ly),n=S.planted.length+1,err=intended?Math.hypot(lx-intended.x,ly-intended.y):null,w=windXY(b.x,b.y,b.alt);
+ S.planted.push({x:lx,y:ly,score:c.score});S.dirty=true;const [la,lo]=toLL(lx,ly);
+ S.log.unshift({n,la:la.toFixed(6),lo:lo.toFixed(6),score:c.score,err,alt:b.alt,ws:Math.hypot(w.x,w.y),by:S.mode==='auto'?'Auto':'Pilot'});renderLog();
+ say(`Seed ${n} planted from ${b.alt.toFixed(0)} m, spot score ${c.score.toFixed(2)}.`+(c.score<S.thr?' Below your minimum score.':''))}
+function aim(P,w){const b=S.b,dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy),g=Math.min(VMAX*.9,d*.7);
+ let cx=(d?dx/d*g:0)-w.x,cy=(d?dy/d*g:0)-w.y;const m=Math.hypot(cx,cy);if(m>VMAX){cx*=VMAX/m;cy*=VMAX/m}return{cx,cy,d}}
+function reveal(){const b=S.b;if(b.alt<3)return;const r=R();
+ for(let j=Math.max(0,Math.floor((b.y-r)/CS));j<=Math.min(N-1,Math.floor((b.y+r)/CS));j++)
+  for(let i=Math.max(0,Math.floor((b.x-r)/CS));i<=Math.min(N-1,Math.floor((b.x+r)/CS));i++){
+   const c=S.cells[j*N+i];if(c.known)continue;const dx=Math.max(c.x-CS/2-b.x,0,b.x-c.x-CS/2),dy=Math.max(c.y-CS/2-b.y,0,b.y-c.y-CS/2);
+   if(Math.hypot(dx,dy)<=r){c.known=true;S.knownN++;S.dirty=true}}}
+function step(dt){if(!S.cells)return;const b=S.b;S.t+=dt;updateWF();const w=windXY(b.x,b.y,b.alt);
+ let cx=0,cy=0,P=null,tol=1.5;const landed=S.mode==='auto'&&S.state==='landed';
+ if(!landed&&b.batt<15&&!(S.mode==='auto'&&S.state==='return')){S.mode='auto';S.state='return';S.queue=[];S.route=[];say('Low battery failsafe: returning home.')}
+ if(S.hold>0)S.hold-=dt;
+ const k=S.keys,kx=(k.right?1:0)-(k.left?1:0),ky=(k.down?1:0)-(k.up?1:0);
+ if(S.mode==='manual'&&(k.climb||k.descend))S.altCmd=clamp(S.altCmd+((k.climb?1:0)-(k.descend?1:0))*4*dt,0,120);
+ if(S.mode==='manual'&&(kx||ky)){const m=Math.hypot(kx,ky);cx=kx/m*VMAX;cy=ky/m*VMAX;S.target=null}
+ else if(S.hold<=0){
+  if(S.mode==='auto'){
+   if(S.state==='survey'&&(!S.route.length||b.batt<50))startPlanting();
+   if(S.state==='plant'&&(!S.queue.length||b.seeds<=0)){S.state='return';say('Planting finished. Returning home.')}
+   if(S.state==='survey'){P=S.route[0];tol=Math.max(4,R()*.15)}
+   else if(S.state==='plant'){const t=S.queue[0],f=fallDrift(b.alt,b.x,b.y);P={x:t.x-f.dx,y:t.y-f.dy}}
+   else if(S.state==='return'){P=HOME;tol=4}
+  }else if(S.target)P=S.target;
+  if(P){const a=aim(P,w);cx=a.cx;cy=a.cy;
+   if(a.d<tol&&S.mode==='auto'){
+    if(S.state==='survey')S.route.shift();
+    else if(S.state==='plant'){if(Math.hypot(b.vx,b.vy)<1.5&&Math.abs(b.alt-S.da)<2){dropSeed(S.queue[0]);S.queue.shift();S.hold=2}}
+    else if(S.state==='return'){S.state='landed';say(`Landed at home. ${S.planted.length} seeds planted.`)}}}}
+ let tAlt=S.altCmd;if(S.mode==='auto')tAlt={survey:S.sa,plant:S.da,'return':30}[S.state]??0;
+ if(b.batt<=0){cx=cy=0;tAlt=0;if(!S.warned){S.warned=true;say('Battery empty. The balloon is descending and drifting with the wind.')}}
+ const ground=b.alt<2,a=Math.min(1,dt*1.5),tx=ground?0:cx+w.x,ty=ground?0:cy+w.y;
+ b.vx+=(tx-b.vx)*a;b.vy+=(ty-b.vy)*a;b.alt+=clamp(tAlt-b.alt,-3*dt,3*dt);if(b.alt<0)b.alt=0;
+ b.x=clamp(b.x+b.vx*dt,0,SITE);b.y=clamp(b.y+b.vy*dt,0,SITE);
+ if(!(ground&&tAlt<2))b.batt=Math.max(0,b.batt-dt*(.004+.0022*Math.hypot(cx,cy)+(Math.abs(tAlt-b.alt)>.5?.002:0)));
+ if(cx||cy){let d=Math.atan2(cy,cx)-b.hdg;d=Math.atan2(Math.sin(d),Math.cos(d));b.hdg+=d*Math.min(1,dt*3)}
+ reveal()}
+// ---------- drawing ----------
+const heat=s=>{const t=clamp((s-.25)/.6);return`hsl(${14+t*112} ${55+t*15}% ${t<.5?52:46}%)`};
+function arrow(g,x,y,u,v,L,col){const m=Math.hypot(u,v);if(m<.05)return;const ux=u/m,uy=v/m;g.strokeStyle=g.fillStyle=col;g.lineWidth=2;
+ g.beginPath();g.moveTo(x-ux*L,y-uy*L);g.lineTo(x+ux*L,y+uy*L);g.stroke();
+ g.beginPath();g.moveTo(x+ux*L,y+uy*L);g.lineTo(x+ux*(L-8)-uy*5,y+uy*(L-8)+ux*5);g.lineTo(x+ux*(L-8)+uy*5,y+uy*(L-8)-ux*5);g.fill()}
+function draw(){const g=gA,cs=getComputedStyle(document.documentElement),c=n=>cs.getPropertyValue(n).trim(),acc=c('--acc'),good=c('--good'),panel=c('--panel');
+ g.clearRect(0,0,cvA.width,cvA.height);if(!S.cells)return;
+ const nw=map.latLngToContainerPoint(toLL(0,0)),se=map.latLngToContainerPoint(toLL(SITE,SITE)),ppm=(se.x-nw.x)/SITE,X=x=>nw.x+x*ppm,Y=y=>nw.y+y*ppm,b=S.b,q=CS*ppm,gap=q>8?1:0;
+ if(S.layers.terrain){for(const e of S.cells){
+   if(S.view==='elev'){const t=(e.e-S.emin)/(S.emax-S.emin+1);g.fillStyle=`hsla(${105-75*t} ${32+12*t}% ${30+36*t}% / .62)`}
+   else g.fillStyle=e.known?heat(e.score):'rgba(80,92,98,.5)';
+   g.fillRect(X(e.x)-q/2+gap,Y(e.y)-q/2+gap,q-2*gap,q-2*gap);
+   if(S.view==='score'&&e.known&&e.shade){g.beginPath();g.arc(X(e.x),Y(e.y),q*.28,0,7);g.fillStyle='rgba(10,40,25,.6)';g.fill()}}}
+ g.setLineDash([6,4]);g.strokeStyle='#fff';g.lineWidth=1.5;g.strokeRect(nw.x,nw.y,SITE*ppm,SITE*ppm);g.setLineDash([]);
+ if(S.layers.wind){const k=S.wl;for(const i in S.wp){const p=S.wp[i],pt=map.latLngToContainerPoint([p.lat,p.lon]);
+   if(pt.x<-20||pt.y<-20||pt.x>cvA.width+20||pt.y>cvA.height+20)continue;const [u,v]=S.wf[i][k],m=Math.hypot(u,v);
+   arrow(g,pt.x,pt.y,u,-v,12+m*3,'#fff');g.font='600 12px sans-serif';g.textAlign='center';g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.6)';g.strokeText(m.toFixed(1)+' m/s',pt.x,pt.y+28);g.fillStyle='#fff';g.fillText(m.toFixed(1)+' m/s',pt.x,pt.y+28)}}
+ if(!S.layers.mission)return;
+ if(S.mode==='auto'&&S.queue.length){g.setLineDash([5,5]);g.strokeStyle='#fff';g.lineWidth=1.5;g.beginPath();g.moveTo(X(b.x),Y(b.y));S.queue.slice(0,8).forEach(p=>g.lineTo(X(p.x),Y(p.y)));g.stroke();g.setLineDash([])}
+ g.lineWidth=2.5;g.strokeStyle=acc;for(const e of S.cand){g.beginPath();g.arc(X(e.x),Y(e.y),8,0,7);g.stroke()}
+ for(const p of S.planted){g.beginPath();g.arc(X(p.x),Y(p.y),5,0,7);g.fillStyle=good;g.fill();g.strokeStyle='#fff';g.lineWidth=1.5;g.stroke()}
+ g.fillStyle='#111';g.fillRect(X(HOME.x)-9,Y(HOME.y)-9,18,18);g.fillStyle='#fff';g.font='700 12px sans-serif';g.textAlign='center';g.fillText('H',X(HOME.x),Y(HOME.y)+4);
+ if(S.target){const x=X(S.target.x),y=Y(S.target.y);g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(x-9,y);g.lineTo(x+9,y);g.moveTo(x,y-9);g.lineTo(x,y+9);g.stroke()}
+ if(b.alt>3){g.setLineDash([4,4]);g.strokeStyle='#fff';g.lineWidth=1.2;g.beginPath();g.arc(X(b.x),Y(b.y),R()*ppm,0,7);g.stroke();g.setLineDash([])}
+ g.save();g.translate(X(b.x),Y(b.y));g.rotate(b.hdg);g.fillStyle=acc;g.strokeStyle='#fff';g.lineWidth=2;
+ g.beginPath();g.moveTo(-14,0);g.lineTo(-23,-7);g.lineTo(-23,7);g.closePath();g.fill();
+ g.beginPath();g.ellipse(0,0,17,8,0,0,7);g.fill();g.stroke();g.beginPath();g.arc(0,0,2.5,0,7);g.fillStyle='#fff';g.fill();g.restore()}
+let parts=[];
+function drawParticles(r){const g=gB,w=cvB.width,h=cvB.height;
+ g.globalCompositeOperation='destination-out';g.fillStyle='rgba(0,0,0,.08)';g.fillRect(0,0,w,h);g.globalCompositeOperation='source-over';
+ if(!S.layers.wind||!S.wf.length)return;const want=clamp(Math.round(w*h/2200),120,550);
+ while(parts.length<want)parts.push({x:Math.random()*w,y:Math.random()*h,a:Math.random()*80});parts.length=Math.min(parts.length,want);
+ const z=map.getZoom(),ppmz=2**z/(156543.03*Math.cos(S.site.lat*Math.PI/180)),k=S.wl;g.lineWidth=1.6;
+ for(const p of parts){const ll=map.containerPointToLatLng([p.x,p.y]),[u,v]=idw(ll.lat,ll.lng,k),m=Math.hypot(u,v),nx=p.x+u*ppmz*40*r,ny=p.y-v*ppmz*40*r;
+  g.strokeStyle=`rgba(255,255,255,${clamp(.35+m/8,.35,.95)})`;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(nx,ny);g.stroke();p.x=nx;p.y=ny;
+  if(++p.a>90||nx<0||ny<0||nx>w||ny>h){p.x=Math.random()*w;p.y=Math.random()*h;p.a=0}}}
+// ---------- UI ----------
+function renderLog(){$('#log').innerHTML=S.log.slice(0,6).map(r=>`<tr><td>${r.n}</td><td>${r.la}</td><td>${r.lo}</td><td>${r.score.toFixed(2)}</td><td>${r.err==null?'–':r.err.toFixed(1)+' m'}</td><td>${r.alt.toFixed(0)} m</td><td>${r.by}</td></tr>`).join('')||'<tr><td colspan="7">No seeds planted yet.</td></tr>'}
+function cSpeed(h,alt){const p=S.wp[12],a=clamp(alt,10,120),k=a<=80?0:1,t=a<=80?(a-10)/70:(a-80)/40;
+ return Math.hypot(lerp(p.U[k][h],p.U[k+1][h],t),lerp(p.V[k][h],p.V[k+1][h],t))}
+function renderStrip(){if(!S.wp.length)return;let first=-1,html='';
+ for(let h=0;h<S.nh;h++){const sp=Math.max(cSpeed(h,S.sa),cSpeed(h,S.da)),ok=S.weatherAvailable&&sp<VMAX*.8;if(ok&&first<0&&h>=S.nowIdx)first=h;
+  html+=`<button class="${ok?'ok':'no'}${h===S.h0?' sel':''}" data-h="${h}" title="${S.times[h].replace('T',' ')}, ${S.weatherAvailable?sp.toFixed(1)+' m/s':'weather unavailable'}" aria-label="${S.times[h]}, wind ${sp.toFixed(1)} metres per second, ${!S.weatherAvailable?'forecast unavailable':ok?'flyable':'too windy'}"></button>`}
+ $('#strip').innerHTML=html;$('#hl').textContent=S.times[S.h0].replace('T',' ');
+ $('#win').textContent=!S.weatherAvailable?'Forecast data unavailable. Simulation uses zero wind for demonstration; no flight-safety window can be calculated.':first<0?'No hour in the next 48 h is calm enough at these altitudes.':`Next flyable hour: ${S.times[first].replace('T',' ')}. Green means wind under ${(VMAX*.8).toFixed(1)} m/s at both altitudes.`}
+function ui(){if(!S.cells)return;const b=S.b,gs=Math.hypot(b.vx,b.vy),[la,lo]=toLL(b.x,b.y),pl=S.planted,w=windXY(b.x,b.y,b.alt),ws=Math.hypot(w.x,w.y),from=(Math.atan2(w.x,-w.y)*180/Math.PI+180+360)%360;
+ const st={survey:'Auto: surveying',plant:'Auto: planting','return':'Auto: returning',landed:'Landed',idle:'Auto'}[S.state];
+ const hi=Math.min(S.nh-1,Math.round(S.hf||S.h0)),cp=S.wp[12];
+ $('#t-mode').textContent=S.mode==='manual'?'Pilot':st;$('#t-pos').textContent=`${la.toFixed(5)}, ${lo.toFixed(5)}`;
+ $('#t-alt').textContent=b.alt.toFixed(0)+' m';$('#t-spd').textContent=gs.toFixed(1)+' m/s';
+ const dw=$('#t-wind');dw.textContent=`${(ws*3.6).toFixed(1)} km/h from ${from.toFixed(0)}°`+(ws>VMAX*.8?' (too strong)':'');dw.className=ws>VMAX*.8?'warn':'';if(!S.weatherAvailable)dw.textContent='Unavailable • demo zero wind';
+ $('#t-time').textContent=S.times[hi].replace('T',' ');$('#t-temp').textContent=cp&&cp.temp[hi]!=null?cp.temp[hi].toFixed(1)+' °C':'n/a';
+ $('#t-sm').textContent=cp&&cp.sm[hi]!=null?cp.sm[hi].toFixed(2)+' m³/m³':'n/a';
+ $('#t-batt').textContent=b.batt.toFixed(0)+'%';$('#t-seeds').textContent=b.seeds;
+ $('#t-planted').textContent=pl.length+(pl.length?`, avg score ${(pl.reduce((a,p)=>a+p.score,0)/pl.length).toFixed(2)}`:'');
+ $('#t-scan').textContent=Math.round(S.knownN/S.cells.length*100)+'%';$('#v-thr').textContent=S.thr.toFixed(2);
+  const cov=Math.round(S.knownN/S.cells.length*100);
+  $('#hero-alt').textContent=b.alt.toFixed(0);
+  $('#hero-wind').textContent=S.weatherAvailable?(ws*3.6).toFixed(1):'—';
+  $('#hero-seeds').textContent=pl.length;
+  $('#hero-battery').textContent=b.batt.toFixed(0);
+  $('#hero-coverage').textContent=cov;
+  $('#live-mode').textContent=S.mode==='manual'?'MANUAL CONTROL':S.state==='landed'?'MISSION COMPLETE':S.state.toUpperCase();
+  $('#mission-phase').textContent=S.mode==='manual'?'STANDBY / MANUAL':S.state==='survey'?'SURVEY IN PROGRESS':S.state==='plant'?'SEED DISPERSAL':S.state==='return'?'RETURN TO BASE':S.state==='landed'?'MISSION COMPLETE':'READY TO DEPLOY';
+  $('#battery-fill').style.width=b.batt.toFixed(0)+'%';
+  $('#coverage-fill').style.width=cov+'%';
+  $('#seed-fill').style.width=(b.seeds/SEEDS*100)+'%';
+  $('#count-left').textContent=b.seeds;
+  $('#flight-site').textContent=S.site.n||'Custom site';
+  $('#readout-clock').textContent=S.times[hi].replace('T',' · ');
+}
+let last=performance.now(),acc=0;
+function frame(n){const r=Math.min(.05,(n-last)/1000);last=n;
+ if(!S.paused){let sim=r*S.speed;while(sim>0){const d=Math.min(.25,sim);step(d);sim-=d}}
+ if(S.dirty&&S.cells){S.cand=candidates();S.dirty=false}
+ draw();drawParticles(r);if((acc+=r)>.15){acc=0;ui()}requestAnimationFrame(frame)}
+// ---------- controls ----------
+$('#start').onclick=startAuto;
+$('#home').onclick=()=>{S.mode='auto';S.state='return';S.queue=[];S.route=[];S.target=null;say('Returning home.')};
+$('#reset').onclick=()=>{reset();say('Reset. Balloon at home with a full battery and magazine.')};
+$('#pause').onclick=e=>{S.paused=!S.paused;e.target.textContent=S.paused?'Resume':'Pause'};
+$('#drop').onclick=()=>{takeover();dropSeed(S.target)};
+document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;
+ el.onpointerdown=e=>{e.preventDefault();takeover();S.keys[k]=true};
+ ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>S.keys[k]=false))});
+const km={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right',e:'climb',q:'descend'};
+addEventListener('keydown',e=>{if(/INPUT|SELECT/.test(e.target.tagName))return;const k=km[e.key.length>1?e.key:e.key.toLowerCase()];
+ if(k){takeover();S.keys[k]=true;e.preventDefault()}
+ else if(e.key===' '&&e.target.tagName!=='BUTTON'){e.preventDefault();takeover();dropSeed(S.target)}});
+addEventListener('keyup',e=>{const k=km[e.key.length>1?e.key:e.key.toLowerCase()];if(k)S.keys[k]=false});
+map.on('click',e=>{if(!S.cells)return;const [x,y]=toXY(e.latlng.lat,e.latlng.lng);if(x<-150||y<-150||x>SITE+150||y>SITE+150)return;
+ takeover();S.target={x:clamp(x,0,SITE),y:clamp(y,0,SITE)}});
+$('#site').onchange=e=>{S.site={...SITES[e.target.value]};load()};
+$('#here').onclick=()=>{const c=map.getCenter();S.site={n:'Custom site',lat:c.lat,lon:c.lng};load()};
+$('#zs').onclick=zoomSite;$('#zr').onclick=zoomKenya;
+$('#l-t').onchange=e=>S.layers.terrain=e.target.checked;$('#l-m').onchange=e=>S.layers.mission=e.target.checked;
+$('#l-w').onchange=e=>{S.layers.wind=e.target.checked;clearB()};
+$('#tv').onchange=e=>S.view=e.target.value;$('#wl').onchange=e=>{S.wl=+e.target.value;clearB()};
+$('#fol').onchange=e=>S.follow=e.target.checked;
+$('#hr').onchange=e=>setHour(+e.target.value);
+$('#strip').onclick=e=>{const h=e.target.dataset.h;if(h!=null){$('#hr').value=h;setHour(+h)}};
+function setHour(h){S.h0=h;buildCells();reset();renderStrip();say('Weather start hour changed. Mission reset.')}
+$('#sa').onchange=e=>{S.sa=+e.target.value;renderStrip()};$('#da').onchange=e=>{S.da=+e.target.value;renderStrip()};
+$('#sp').onchange=e=>S.speed=+e.target.value;
+$('#thr').oninput=e=>{S.thr=+e.target.value;S.dirty=true};
+$('#copy').onclick=async()=>{const rows=['n,lat,lon,score,miss_m,drop_alt_m,wind_ms,by',...S.log.slice().reverse().map(r=>[r.n,r.la,r.lo,r.score.toFixed(3),r.err==null?'':r.err.toFixed(2),r.alt.toFixed(0),r.ws.toFixed(1),r.by].join(','))].join('\n');
+ try{await navigator.clipboard.writeText(rows);say(`Copied ${S.log.length} rows as CSV.`)}catch(e){say('Clipboard is blocked. Select the table text to copy it.')}};
+$('#hr').oninput=e=>$('#hl').textContent=S.times[+e.target.value].replace('T',' ');
+$('#ocean-toggle').addEventListener('click',e=>{const on=document.body.classList.toggle('ocean');e.currentTarget.setAttribute('aria-pressed',String(on));e.currentTarget.innerHTML=on?'☀ &nbsp; Aero Day':'☾ &nbsp; Ocean'});
+$('#focus-toggle').addEventListener('click',e=>{const on=document.body.classList.toggle('focus-map');e.currentTarget.setAttribute('aria-pressed',String(on));e.currentTarget.innerHTML=on?'▣ &nbsp; Exit focus':'⛶ &nbsp; Focus map';setTimeout(()=>map.invalidateSize(),260)});
+reset();requestAnimationFrame(frame);load(true);
+
+</script>
+</body>
+</html>
