@@ -1,8 +1,4 @@
-https://seedwind-living-earth-lab.tealbay4.chatgpt.site/ -- our (sim)
-🌱 SEEDWIND — Living Earth Lab
-Where nature meets tomorrow. An experimental environmental mapping and aerial seed-deployment simulation project exploring how geospatial data, weather conditions, and autonomous flight concepts could support ecological restoration in Kenya.
 
-![Project](https://img.shields.io/badge/Project-HackPHS-00a896) ![Status](https://img.shields.io/badge/Status-Experimental-orange)
 
 🌍 Overview
 SEEDWIND is an interactive environmental exploration and flight simulation dashboard designed around the Kenyan landscape. It combines map visualization, environmental data, and simulated aerial missions to explore how technology might help identify potential areas for ecological restoration.
